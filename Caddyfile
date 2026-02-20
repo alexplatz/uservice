@@ -1,0 +1,11 @@
+9000: {
+ reverse_proxy :8000
+}
+
+9001: {
+ reverse_proxy :8001
+}
+
+9002: {
+ reverse_proxy :8002
+}
