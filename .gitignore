@@ -6,3 +6,4 @@ node_modules/
 .direnv
 apps/db/drizzle/
 .tanstack/
+.env.*

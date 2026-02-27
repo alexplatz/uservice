@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "../store/auth";
 import { useCounterStore } from "../store/count";
-import { getAll, handleGet } from "../api/client";
+import { refresh } from "../api/client";
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: ({ location }) => {
@@ -18,19 +18,15 @@ export const Route = createFileRoute('/dashboard')({
   },
   component: () => {
     const { counter, increment } = useCounterStore()
-    const { user } = useAuthStore()
+    const { user, jwt } = useAuthStore()
 
     const handleClick = () => increment(counter)
 
     return <>
-      <h1>{user?.name}</h1>
-      <InfoCard title="locations" elements={user?.locations} />
+      <h1>{user.username}</h1>
+      <InfoCard title="emails" elements={[user.email]} />
       <button onClick={handleClick}>{counter}</button>
-      <div
-        onClick={async () => handleGet(await getAll())}
-      >
-        click me for data (broken while drizzle borked)
-      </div>
+      <button onClick={async () => console.log(await refresh(jwt))}>refresh</button>
     </>
   }
 })

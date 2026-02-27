@@ -1,19 +1,21 @@
 import { db } from "./client";
-import { dataPoints } from "./schema";
+import { users, credentials } from "./schema";
 
-const result = db.insert(dataPoints).values([
+const [userResult] = await db.insert(users).values([
   {
-    clientId: 1,
-    value: .5,
-  },
-  {
-    clientId: 2,
-    value: .15,
-  },
-  {
-    clientId: 3,
-    value: .75,
+    email: 'bat@squat.org',
+    username: 'bat',
   }
 ]).returning()
 
-result.then(data => console.log('seeded db with: ', data))
+const credentialResult = await db.insert(credentials).values([
+  {
+    id: crypto.randomUUID(),
+    publicKey: "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExZ3bQ9Xa4kbrskcobWw8Drr4Facf074_o9GbN_g56L8V2IOeHxBrcNS35XQFD1VoGWiO0Aqx3QnmVst3aCz6rg==",
+    algorithm: -7,
+    transports: ["usb"],
+    userId: userResult.id
+  }
+]).returning()
+
+console.log('seeded db with: ', { userResult, credentialResult })

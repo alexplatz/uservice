@@ -1,7 +1,35 @@
-import { integer, real, sqliteTable } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const dataPoints = sqliteTable('dataPoints', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  clientId: integer('clientId'),
-  value: real('value')
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey().$defaultFn(Bun.randomUUIDv7),
+  email: text('email'),
+  username: text('username'),
 })
+
+export const challenges = sqliteTable('challenges', {
+  id: text('id').notNull().primaryKey(),
+  challenge: text('challenge').notNull(),
+})
+
+export const credentials = sqliteTable('credentials', {
+  id: text('id').notNull().primaryKey(),
+  publicKey: text('publicKey').notNull(),
+  algorithm: integer('algorithm').notNull(),
+  transports: text('transports', { mode: 'json' })
+    .notNull()
+    .$type<string[]>()
+    .default(sql`'[]'`),
+  userId: text('userId').notNull().references(() => users.id)
+})
+
+export const sessions = sqliteTable('sessions', {
+  userId: integer('userId').references(() => users.id),
+  familyId: text('familyId').primaryKey().$defaultFn(Bun.randomUUIDv7),
+  refreshToken: text('refreshToken'),
+  lastUsed: text('lastUsed')
+    .notNull()
+    .default(sql`current_timestamp`)
+    .$onUpdate(() => sql`current_timestamp`),
+})
+
