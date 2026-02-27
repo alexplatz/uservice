@@ -1,28 +1,60 @@
-import type { FunctionComponent } from 'react'
+// import type { FunctionComponent } from 'react'
 
-// should be secrets managed in actuality
-const BASE_URL = 'http://localhost:8001/'
-enum endpoints {
-  DATA = 'data'
+import { edenTreaty } from "@elysiajs/eden"
+import type { App } from "../../../server"
+import { client } from "@passwordless-id/webauthn"
+import type { User } from "../types"
+
+
+const server = edenTreaty<App>(import.meta.env.VITE_SERVER_URL!, {
+  $fetch: { credentials: 'include' }
+})
+
+const registerServer = (server, passkeyClient) => async (user: User) => {
+  const challengeId = crypto.randomUUID()
+  const { data, error } = await server.user.challenge.post({ challengeId })
+
+  if (error) {
+    return { data, error }
+  } else {
+    const registration = await passkeyClient.register({
+      challenge: data,
+      user: { displayName: user.username, name: user.email }
+    })
+
+    return await server.user.register.post({
+      email: user.email,
+      username: user.username,
+      challengeId,
+      registration
+    })
+  }
 }
 
-// convert to TaskEither https://dev.to/ksaaskil/using-fp-ts-for-http-requests-and-validation-131c
-const get = (endpoint) => async () => await fetch(`${BASE_URL}${endpoint}`).catch(e => e)
-const post = (endpoint) => async () => await fetch(`${BASE_URL}${endpoint}`, { method: 'POST' })
+const refreshServer = (server) => async (jwt) => {
+  return await server.refresh.post({ jwt })
+}
 
-export const getAll = get(endpoints.DATA)
+const loginServer = (server, passkeyClient) => async () => {
+  const challengeId = crypto.randomUUID()
+  const { data, error } = await server.user.challenge.post({ challengeId })
 
-export const postData = (clientId, value) => post(`${endpoints.DATA}/${clientId}/${value}`)
+  if (error) {
+    return { data, error }
+  } else {
+    const authentication = await passkeyClient.authenticate({
+      challenge: data,
+    })
 
-export const handleGet = async (res: Response) =>
-  res?.ok ? console.log(await res.json()) : console.log({ 'error': res })
+    return await server.user.login.post({
+      challengeId,
+      authentication
+    })
+  }
+}
 
-// export const handleGet = async (
-//   res: Response,
-//   Success: FunctionComponent<any>,
-//   Failure: FunctionComponent
-// ) =>
-//   res?.ok ?
-//     <Success>{await res.json()}</Success> :
-//     <Failure />
-
+export const [
+  register, login, refresh
+] = [
+    registerServer(server, client), loginServer(server, client), refreshServer(server)
+  ]

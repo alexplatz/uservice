@@ -1,26 +1,43 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
-import { getAll, persistValue } from '../db/client'
-
-const meta = {
-  port: 8001,
-  // fetch: app.fetch,
-}
+import { jwt } from '@elysiajs/jwt'
+import { getAllUsers } from '../db/client'
+import { challenge, challengeShape, login, loginShape, refresh, refreshShape, register, registerShape } from './posts'
 
 
 // specify cors
-new Elysia()
-  .use(cors())
-
+const app = new Elysia()
+  .use(cors({
+    origin: `${Bun.env.CLIENT_URL!}`,
+    credentials: true
+  }))
+  .use(
+    jwt({
+      name: 'access',
+      secret: Bun.env.JWT_SECRET!,
+      exp: '15m'
+    })
+  )
+  .use(
+    jwt({
+      name: 'refresh',
+      secret: Bun.env.JWT_SECRET!,
+      exp: '1d'
+    })
+  )
   .get('/', 'Hello World')
-  .get('/data', () => getAll())
+  .get('/data', getAllUsers)
+  .get('/error', ({ status }) => status(401))
 
-  .post('/data/:clientid/:value', async ({ params: { clientid, value } }) => {
-    await persistValue(parseInt(clientid), parseInt(value))
-    return { clientid, value }
-  })
+  .post('/user/challenge', challenge, challengeShape)
 
-  .listen(meta.port)
+  // on refresh, create new access and refresh tokens
+  .post('/user/register', register, registerShape)
+  .post('/user/login', login, loginShape)
+  .post('/refresh', refresh, refreshShape)
 
-console.log(`server started on http://localhost:${meta.port}!`)
-export default meta
+  .listen(Bun.env.SERVER_PORT! || 8001)
+
+console.log(`server started on ${Bun.env.SERVER_URL!}!`)
+
+export type App = typeof app

@@ -3,13 +3,12 @@ import { create } from 'zustand'
 type AuthState = {
   jwt: string,
   refreshToken: string,
-  user: userData | null
+  user: userData
 }
 
 type userData = {
-  name: string,
-  settings: { isAwesome: boolean },
-  locations: string[]
+  username: string,
+  email: string,
 }
 
 type AuthAction = {
@@ -21,7 +20,7 @@ type AuthAction = {
 export const useAuthStore = create<AuthState & AuthAction>((set) => ({
   jwt: '',
   refreshToken: '',
-  user: null,
+  user: { username: '', email: '' },
   setJwt: (jwt) => set(() => ({ jwt: jwt })),
   setRefreshToken: (refreshToken) => set(() => ({ refreshToken: refreshToken })),
   setUser: (user) => set(() => ({ user: user }))

@@ -2,8 +2,10 @@
   "name": "server",
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",
+    "@elysiajs/jwt": "^1.4.0",
+    "@passwordless-id/webauthn": "^2.3.5",
     "drizzle-orm": "^0.45.1",
-    "elysia": "^1.4.25",
+    "elysia": "catalog:",
     "fp-ts": "^2.16.11",
     "ts-pattern": "^5.9.0"
   },

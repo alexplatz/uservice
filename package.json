@@ -19,5 +19,8 @@
   },
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "catalog": {
+    "elysia": "^1.4.25"
+  }
 }
