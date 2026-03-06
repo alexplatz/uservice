@@ -1,0 +1,27 @@
+# generate 365 day chain, add to keychain, only use acme in prod
+# - uncomment the pki block
+# - run it (from podman)
+# - visit proxy url
+# - grab the caddy pem from the browser cert warning
+# - add cert to system keychain
+# - recomment block
+# - DO NOT RUN PKI BLOCK IN PROD
+# 
+# add headscale extra_records for frontend, backend, db
+# {
+# 	pki {
+# 		ca local {
+# 			intermediate_lifetime 365d
+# 		}
+# 	}
+# }
+
+{$VITE_CLIENT_PROXY} {
+	reverse_proxy localhost:3001
+	tls internal
+
+	# log {
+	# 	format json
+	# 	output stdout
+	# }
+}

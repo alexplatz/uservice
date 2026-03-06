@@ -12,15 +12,14 @@
     "watch:server": "bun run --cwd apps/server watch",
     "watch:db": "bun run --cwd apps/db watch",
     "watch": "concurrently 'bun run watch:client' 'bun run watch:server' 'bun run watch:db'",
+    "host:client": "bun run --cwd apps/client host",
     "start:client": "bun run --cwd apps/client start",
     "start:server": "bun run --cwd apps/server start",
     "start:db": "bun run --cwd apps/db start",
-    "start": "concurrently 'bun run start:client' 'bun run start:server' 'bun run start:db'"
+    "start": "concurrently 'bun run start:client' 'bun run start:server' 'bun run start:db'",
+    "host": "concurrently 'bun run host:client' 'bun run start:server' 'bun run start:db'"
   },
   "workspaces": [
     "apps/*"
-  ],
-  "catalog": {
-    "elysia": "^1.4.25"
-  }
+  ]
 }

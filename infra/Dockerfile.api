@@ -1,0 +1,21 @@
+FROM oven/bun:1.3 
+WORKDIR /apps
+
+COPY apps ./
+
+##### DB, since sqlite is embedded
+WORKDIR /apps/db
+
+# ADD apps/db/setup.sh ./
+RUN bun install --frozen-lockfile
+#####
+
+WORKDIR /apps/server
+
+RUN bun install --frozen-lockfile
+
+EXPOSE 8001
+
+# USER bun
+CMD [ "bun", "run", "start" ]
+

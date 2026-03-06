@@ -1,5 +1,5 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, persistChallenge, persistCredential, persistUser } from "../db/client"
+import { deleteChallenge, getChallenge, getCredentialWithUser, persistChallenge, persistCredential, persistUser } from "../../db/client"
 import { server } from '@passwordless-id/webauthn'
 import { createJwts, refreshJwts } from "./utils"
 

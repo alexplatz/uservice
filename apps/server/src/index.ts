@@ -1,14 +1,15 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { jwt } from '@elysiajs/jwt'
-import { getAllUsers } from '../db/client'
 import { challenge, challengeShape, login, loginShape, refresh, refreshShape, register, registerShape } from './posts'
 
+// import { logger } from '@bogeychan/elysia-logger'
 
-// specify cors
+
 const app = new Elysia()
+  // .use(logger())
   .use(cors({
-    origin: `${Bun.env.CLIENT_URL!}`,
+    origin: [`${Bun.env.CLIENT_URL!}`],
     credentials: true
   }))
   .use(
@@ -26,8 +27,6 @@ const app = new Elysia()
     })
   )
   .get('/', 'Hello World')
-  .get('/data', getAllUsers)
-  .get('/error', ({ status }) => status(401))
 
   .post('/user/challenge', challenge, challengeShape)
 

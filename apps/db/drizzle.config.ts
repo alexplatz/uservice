@@ -5,6 +5,6 @@ export default {
   out: './drizzle',
   dialect: 'sqlite',
   dbCredentials: {
-    url: './data.db'
+    url: `${Bun.env.DB_URL}`
   },
 } satisfies Config

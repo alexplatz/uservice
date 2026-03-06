@@ -15,3 +15,5 @@ to setup the db:
   bun run migrate.ts
   bun run seed.ts
 ```
+to run the suite:
+`podman compose up [service]`

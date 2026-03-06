@@ -5,6 +5,6 @@ import path from "path"
 import * as schema from "./schema"
 
 // these paths should also be secrets managed
-const db = drizzle(new Database("data.db"), { schema });
+const db = drizzle(new Database(`${Bun.env.DB_URL!}`), { schema });
 migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") });
 

@@ -16,7 +16,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         <Link to="/about" activeProps={{ className: 'font-bold', }}>
           About
         </Link>{' '}
-        <Link to="/dashboard" activeProps={{ className: 'font-bold', }}>
+        <Link to="/dashboard" activeProps={{ className: 'font-bold', }} preload={false}>
           Dashboard
         </Link>
       </div>

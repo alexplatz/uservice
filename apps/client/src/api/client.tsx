@@ -1,7 +1,5 @@
-// import type { FunctionComponent } from 'react'
-
 import { edenTreaty } from "@elysiajs/eden"
-import type { App } from "../../../server"
+import type { App } from "../../../server/src"
 import { client } from "@passwordless-id/webauthn"
 import type { User } from "../types"
 

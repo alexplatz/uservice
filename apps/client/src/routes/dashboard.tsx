@@ -2,12 +2,13 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "../store/auth";
 import { useCounterStore } from "../store/count";
 import { refresh } from "../api/client";
+import { isAuthed } from "../utils/dashboard";
 
 export const Route = createFileRoute('/dashboard')({
-  beforeLoad: ({ location }) => {
-    const { jwt, refreshToken } = useAuthStore.getState()
+  beforeLoad: async ({ location }) => {
+    const { jwt } = useAuthStore.getState()
 
-    if (!(jwt || refreshToken)) {
+    if (!(await isAuthed(jwt))) {
       throw redirect({
         to: '/login',
         search: {

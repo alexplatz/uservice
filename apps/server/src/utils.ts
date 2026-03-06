@@ -1,19 +1,23 @@
-import { deleteSession, getSession, persistSession } from "../db/client"
+import { deleteSession, getSession, persistSession } from "../../db/client"
 
 export const refreshJwts = async (status, refresh, access, auth, jwt) => {
   const refreshPayload = await refresh.verify(auth.value)
 
+  if (!refreshPayload) {
+    return status(401, 'no refreshToken')
+  }
+
   const { user } = await refresh.verify(jwt)
 
-  if (!refreshPayload) {
-    return status(401)
+  if (!user) {
+    return status(401, 'no jwt')
   }
 
   const [session] = await getSession(auth.value)
 
   if (!session) {
     await deleteSession(refreshPayload.familyId)
-    return status(401)
+    return status(401, 'stale refreshToken')
   }
 
   const newRefresh = await refresh.sign({
@@ -29,14 +33,7 @@ export const refreshJwts = async (status, refresh, access, auth, jwt) => {
 
   const newAccess = await access.sign({ user, familyId })
 
-  auth.set({
-    value: newRefresh,
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 86400,
-    path: '/'
-  })
+  setCookie(auth, newRefresh)
 
   return {
     jwt: newAccess,
@@ -52,14 +49,7 @@ export const createJwts = async (refresh, access, auth, user) => {
 
   const newAccess = await access.sign({ user, familyId })
 
-  auth.set({
-    value: newRefresh,
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 86400,
-    path: '/'
-  })
+  setCookie(auth, newRefresh)
 
   return {
     jwt: newAccess,
@@ -68,3 +58,14 @@ export const createJwts = async (refresh, access, auth, user) => {
   }
 }
 
+const setCookie = (cookie, value) => {
+  return cookie.set({
+    domain: `${Bun.env.CLIENT_DOMAIN!}`,
+    value,
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Lax',
+    maxAge: 86400,
+    path: '/'
+  })
+}
