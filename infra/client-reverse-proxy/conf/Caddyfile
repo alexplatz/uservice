@@ -17,7 +17,8 @@
 # }
 
 {$VITE_CLIENT_PROXY} {
-	reverse_proxy localhost:3001
+	# reverse_proxy localhost:3001
+	reverse_proxy client:3001
 	tls internal
 
 	# log {

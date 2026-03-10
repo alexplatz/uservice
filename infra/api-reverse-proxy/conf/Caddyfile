@@ -18,6 +18,7 @@
 
 
 {$SERVER_PROXY} {
-	reverse_proxy localhost:8001
+	# reverse_proxy localhost:8001
+	reverse_proxy api:8001
 	tls internal
 }

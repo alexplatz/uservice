@@ -3,17 +3,21 @@ services:
     image: caddy:2.11.1
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-      - "8001:8001"
+      # - "80:80"
+      # - "9001:443"
+      # - "443:443/udp"
+      # - "8001:8001"
+      # - "9001:8001"
+      - "9001:9001"
     volumes:
       - ./infra/api-reverse-proxy/conf:/etc/caddy
       - caddy_data:/data
       - caddy_config:/config
     env_file:
       - ./apps/server/.env
-    network_mode: host
+    # network_mode: host
+    networks:
+      - app-network
 
   api:
     build:
@@ -32,23 +36,29 @@ services:
         - path: ./apps/server/package.json
           action: rebuild
     command: bun run start
-    network_mode: host
+    # network_mode: host
+    networks:
+      - app-network
 
   client-reverse-proxy:
     image: caddy:2.11.1
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-      - "3001:3001"
+      # - "80:80"
+      # - "9000:443"
+      # - "443:443/udp"
+      # - "3001:3001"
+      # - "9000:3001"
+      - "9000:9000"
     volumes:
       - ./infra/client-reverse-proxy/conf:/etc/caddy
       - caddy_data:/data
       - caddy_config:/config
     env_file:
       - ./apps/client/.env
-    network_mode: host
+    # network_mode: host
+    networks:
+      - app-network
 
   client:
     build:
@@ -65,8 +75,14 @@ services:
         - path: ./apps/client/package.json
           action: rebuild
     command: bun run start
-    network_mode: host
+    # network_mode: host
+    networks:
+      - app-network
 
 volumes:
   caddy_data:
   caddy_config:
+
+networks:
+  app-network:
+    driver: bridge

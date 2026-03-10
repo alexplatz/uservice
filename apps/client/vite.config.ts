@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     base: '/',
     server: {
       allowedHosts: [env.VITE_CLIENT_PROXY!],
+      host: true
     }
   }
 })
