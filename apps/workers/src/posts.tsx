@@ -1,10 +1,8 @@
-import * as React from 'react'
-
 import OTPEmail from './emails/otp'
 
 import { t } from 'elysia'
 import { render } from '@react-email/components'
-import { Queue, Worker, Job, shutdownManager } from 'bunqueue/client'
+import { Queue } from 'bunqueue/client'
 import { randomUUIDv7 } from 'bun'
 import { EmailJob } from './utils'
 import LinkEmail from './emails/link'
