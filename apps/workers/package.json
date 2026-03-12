@@ -4,6 +4,7 @@
     "@bogeychan/elysia-logger": "^0.1.10",
     "@elysiajs/cors": "^1.4.1",
     "@react-email/components": "1.0.7",
+    "bunqueue": "^2.6.9",
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.25",
     "fp-ts": "^2.16.11",
