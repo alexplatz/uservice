@@ -3,6 +3,6 @@
     // "target": "esnext",
     // "module": "esnext",
   	"jsx": "react",
-  	// "moduleResolution": "nodenext"
+  	"moduleResolution": "bundler"
   }
 }

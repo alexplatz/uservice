@@ -21,12 +21,18 @@ const transporter = nodemailer.createTransport({
 const sendVerificationEmail = async (job: Job<EmailJob>) => {
   console.log(`🞷 Processing job ${job.data.id} ...`)
 
-  await transporter.sendMail({
-    from: Bun.env.EMAIL_USER!,
-    to: job.to,
-    subject: 'Verify your email address',
-    html: job.html,
-  })
+  try {
+    await transporter.sendMail({
+      from: Bun.env.EMAIL_USER!,
+      to: job.data.to,
+      subject: 'Verify your email address',
+      html: job.data.html,
+    })
+  } catch (e) {
+    // need logging
+    console.log(e)
+    throw (e)
+  }
 
   console.log('sent email')
   await job.updateProgress(100)
@@ -47,7 +53,7 @@ export const verificationEmail = (queue: Queue<EmailJob>) => async ({ body: { to
     console.log(`✔ Processed job ${job.id}!`)
   })
 
-  await queue.add('welcome', {
+  await queue.add('emails', {
     id: randomUUIDv7(),
     to,
     otp,
