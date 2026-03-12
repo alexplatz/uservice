@@ -2,70 +2,51 @@ import * as React from 'react'
 
 import OTPEmail from './emails/otp'
 
-import * as nodemailer from 'nodemailer'
 import { t } from 'elysia'
 import { render } from '@react-email/components'
 import { Queue, Worker, Job, shutdownManager } from 'bunqueue/client'
 import { randomUUIDv7 } from 'bun'
 import { EmailJob } from './utils'
+import LinkEmail from './emails/link'
 
-const transporter = nodemailer.createTransport({
-  host: Bun.env.EMAIL_HOST!,
-  port: Bun.env.EMAIL_PORT!,
-  auth: {
-    user: Bun.env.EMAIL_USER!,
-    pass: Bun.env.EMAIL_PASSWORD!
-  }
-})
+// const otp = ~~(Math.random() * (900_000 - 1)) + 100_000
 
-const sendVerificationEmail = async (job: Job<EmailJob>) => {
-  console.log(`🞷 Processing job ${job.data.id} ...`)
+// Generic email enqueue function for reusability
+const emailsEnqueue = async (queue: Queue<EmailJob>, to: string, html: string) => {
+  const id = randomUUIDv7()
+  console.log(`enqueing job ${id}`)
 
-  try {
-    await transporter.sendMail({
-      from: Bun.env.EMAIL_USER!,
-      to: job.data.to,
-      subject: 'Verify your email address',
-      html: job.data.html,
-    })
-  } catch (e) {
-    // need logging
-    console.log(e)
-    throw (e)
-  }
-
-  console.log('sent email')
-  await job.updateProgress(100)
-
-  return { sent: true }
-}
-
-export const verificationEmail = (queue: Queue<EmailJob>) => async ({ body: { to, otp } }) => {
-  // const otp = ~~(Math.random() * (900_000 - 1)) + 100_000
-
-  console.log({ to, otp })
-  const html = await render(<OTPEmail otp={otp} />)
-
-
-  const worker: Worker<EmailJob> = new Worker<EmailJob>('emails', sendVerificationEmail, { embedded: true })
-
-  worker.on('completed', (job: Job<EmailJob>) => {
-    console.log(`✔ Processed job ${job.id}!`)
-  })
-
-  await queue.add('emails', {
-    id: randomUUIDv7(),
+  await queue.add('email', {
+    id,
     to,
-    otp,
     html
   })
 
   return { success: true }
 }
 
-export const verificationEmailShape = {
+
+
+/***** Enqueue function derivatives ******/
+export const enqueueOtpEmail = (queue: Queue<EmailJob>) => async ({ body: { to, otp } }) =>
+  await emailsEnqueue(queue, to, await render(<OTPEmail otp={otp} />))
+
+export const enqueueLinkEmail = (queue: Queue<EmailJob>) => async ({ body: { to, link } }) =>
+  await emailsEnqueue(queue, to, await render(<LinkEmail link={link} />))
+
+
+
+/***** Post shapes ******/
+export const otpEmailShape = {
   body: t.Object({
     to: t.String({ format: 'email' }),
     otp: t.Number()
+  })
+}
+
+export const linkEmailShape = {
+  body: t.Object({
+    to: t.String({ format: 'email' }),
+    link: t.String()
   })
 }
