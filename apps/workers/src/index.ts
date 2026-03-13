@@ -25,9 +25,9 @@ const app = new Elysia()
   .get('/', 'Hello World')
   .post('/email/verification', enqueueLinkEmail(emailQueue), linkEmailShape)
 
-  .listen(Bun.env.QUEUE_PORT! || 8002)
+  .listen(Bun.env.WORKERS_PORT! || 8002)
 
-console.log(`server started on ${Bun.env.QUEUE_URL!}!`)
+console.log(`server started on ${Bun.env.WORKERS_URL!}!`)
 
 process.on('SIGINT', async () => {
   console.log('shutting down queues and workers...')
