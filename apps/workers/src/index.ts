@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
-import { enqueueLinkEmail, linkEmailShape } from './posts'
+import { enqueueVerificationEmail, verificationEmailShape } from './posts'
 import { Job, Queue, shutdownManager, Worker } from 'bunqueue/client'
 import { EmailJob, processVerificationJob } from './utils'
 
@@ -19,11 +19,12 @@ verificationWorker.on('completed', (job: Job<EmailJob>) => {
 
 const app = new Elysia()
   .use(cors({
+    // switch to '*' for local testing
     origin: [`${Bun.env.SERVER_URL!}`],
   }))
 
   .get('/', 'Hello World')
-  .post('/email/verification', enqueueLinkEmail(emailQueue), linkEmailShape)
+  .post('/email/verification', enqueueVerificationEmail(emailQueue), verificationEmailShape)
 
   .listen(Bun.env.WORKERS_PORT! || 8002)
 

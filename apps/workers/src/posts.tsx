@@ -29,22 +29,22 @@ const emailsEnqueue = async (queue: Queue<EmailJob>, to: string, html: string) =
 export const enqueueOtpEmail = (queue: Queue<EmailJob>) => async ({ body: { to, otp } }) =>
   await emailsEnqueue(queue, to, await render(<OTPEmail otp={otp} />))
 
-export const enqueueLinkEmail = (queue: Queue<EmailJob>) => async ({ body: { to, link } }) =>
-  await emailsEnqueue(queue, to, await render(<LinkEmail link={link} />))
+export const enqueueVerificationEmail = (queue: Queue<EmailJob>) => async ({ body: { to, url } }) =>
+  await emailsEnqueue(queue, to, await render(<LinkEmail link={url} />))
 
 
 
 /***** Post shapes ******/
 export const otpEmailShape = {
   body: t.Object({
-    to: t.String({ format: 'email' }),
+    to: t.String(),
     otp: t.Number()
   })
 }
 
-export const linkEmailShape = {
+export const verificationEmailShape = {
   body: t.Object({
-    to: t.String({ format: 'email' }),
-    link: t.String()
+    to: t.String(),
+    url: t.String()
   })
 }

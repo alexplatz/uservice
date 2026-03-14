@@ -2,6 +2,8 @@ import { t, status } from "elysia"
 import { deleteChallenge, getChallenge, getCredentialWithUser, persistChallenge, persistCredential, persistUser } from "../../db/client"
 import { server } from '@passwordless-id/webauthn'
 import { createJwts, refreshJwts } from "./utils"
+import { enqueueVerificationEmail } from "../../workers/src/client";
+const { randomBytes } = await import('node:crypto');
 
 export const challenge = async ({ body: { challengeId } }) => {
   const challenge = server.randomChallenge()
@@ -128,3 +130,18 @@ export const loginShape = {
   })
 }
 
+export const verifyEmail = async ({ body: { email } }) => {
+  const token = randomBytes(256).toString('hex');
+  const url = '' //figure this out
+
+  // // persist to cache in the future
+  // await persistVerificationToken(email, token)
+  const res = await enqueueVerificationEmail(email, url)
+  console.log(await res.text())
+}
+
+export const verifyEmailShape = {
+  body: t.Object({
+    email: t.String()
+  })
+}

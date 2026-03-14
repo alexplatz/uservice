@@ -1,17 +1,28 @@
-export const enqueueVerificationEmail = (to: string, url: string) =>
-  new Request(`${Bun.env.WORKERS_PROXY!}/email/verification`, {
+const workersUrl = Bun.env.WORKERS_URL!
+
+// need to figure out better cert strategy
+const enqueueVerificationEmailServer = (serverUrl: string) => async (to: string, url: string) =>
+  await fetch(`${serverUrl}/email/verification`, {
     method: "POST",
+    // only for local testing
+    // tls: {
+    //   rejectUnauthorized: false,
+    // },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to,
       url
     }),
   });
 
-export const enqueueOtpEmail = (to: string, otp: number) =>
-  new Request(`${Bun.env.WORKERS_PROXY!}/email/otp`, {
+const enqueueOtpEmailServer = (serverUrl: string) => async (to: string, otp: number) =>
+  await fetch(`${serverUrl}/email/otp`, {
     method: "POST",
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to,
       otp
     }),
   });
+
+export const [enqueueVerificationEmail, enqueueOtpEmail] = [enqueueVerificationEmailServer(workersUrl), enqueueOtpEmailServer(workersUrl)]
