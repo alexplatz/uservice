@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { jwt } from '@elysiajs/jwt'
-import { challenge, challengeShape, login, loginShape, refresh, refreshShape, register, registerShape, verifyEmail, verifyEmailShape } from './posts'
+import { challenge, challengeShape, getUserEmails, getUserEmailsShape, login, loginShape, refresh, refreshShape, register, registerShape, verifyEmail, verifyEmailShape } from './posts'
 
 // import { logger } from '@bogeychan/elysia-logger'
 
@@ -30,12 +30,11 @@ const app = new Elysia()
   .get('/', 'Hello World')
 
   .post('/user/challenge', challenge, challengeShape)
-
-  // on refresh, create new access and refresh tokens
   .post('/user/register', register, registerShape)
   .post('/user/login', login, loginShape)
   .post('/user/verify', verifyEmail, verifyEmailShape)
   .post('/refresh', refresh, refreshShape)
+  .post('/user/emails', getUserEmails, getUserEmailsShape)
 
   .listen(Bun.env.SERVER_PORT! || 8001)
 

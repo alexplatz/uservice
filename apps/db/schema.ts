@@ -3,8 +3,9 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable('users', {
   id: text('id').primaryKey().$defaultFn(Bun.randomUUIDv7),
-  email: text('email'),
   username: text('username'),
+  otp: text('otp').unique(),
+  otpExpiresAt: integer('otpExpiresAt', { mode: 'timestamp' }),
 })
 
 export const challenges = sqliteTable('challenges', {
@@ -20,6 +21,16 @@ export const credentials = sqliteTable('credentials', {
     .notNull()
     .$type<string[]>()
     .default(sql`'[]'`),
+  userId: text('userId').notNull().references(() => users.id)
+})
+
+export const emails = sqliteTable('emails', {
+  id: text('id').notNull().primaryKey().$defaultFn(Bun.randomUUIDv7),
+  email: text('email').notNull().unique(),
+  isPrimary: integer('isPrimary', { mode: 'boolean' }).notNull().default(false),
+  vToken: text('vToken').unique(),
+  vTokenExpiresAt: integer('vTokenExpiresAt', { mode: 'timestamp' }),
+  verified: integer('isPrimary', { mode: 'boolean' }).notNull().default(false),
   userId: text('userId').notNull().references(() => users.id)
 })
 

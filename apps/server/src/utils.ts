@@ -7,7 +7,7 @@ export const refreshJwts = async (status, refresh, access, auth, jwt) => {
     return status(401, 'no refreshToken')
   }
 
-  const { user } = await refresh.verify(jwt)
+  const { user } = await access.verify(jwt)
 
   if (!user) {
     return status(401, 'no jwt')
@@ -37,8 +37,8 @@ export const refreshJwts = async (status, refresh, access, auth, jwt) => {
 
   return {
     jwt: newAccess,
+    userId: user.id,
     username: user.username,
-    email: user.email
   }
 }
 
@@ -53,8 +53,8 @@ export const createJwts = async (refresh, access, auth, user) => {
 
   return {
     jwt: newAccess,
+    userId: user.id,
     username: user.username,
-    email: user.email
   }
 }
 

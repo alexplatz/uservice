@@ -1,5 +1,5 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, persistChallenge, persistCredential, persistUser } from "../../db/client"
+import { deleteChallenge, getChallenge, getCredentialWithUser, getEmails, persistChallenge, persistCredential, persistUser, updateVerificationToken } from "../../db/client"
 import { server } from '@passwordless-id/webauthn'
 import { createJwts, refreshJwts } from "./utils"
 import { enqueueVerificationEmail } from "../../workers/src/client";
@@ -33,7 +33,7 @@ export const register = async ({ refresh, access, cookie, body: { challengeId, e
   const { credential: { id, publicKey, algorithm, transports } } = await server.verifyRegistration(registration, expected)
 
   await deleteChallenge(challengeId)
-  const [user] = await persistUser(email, username)
+  const [{ users: user }] = await persistUser(email, username)
 
   await persistCredential({ id, publicKey, algorithm, transports, userId: user.id })
 
@@ -132,10 +132,11 @@ export const loginShape = {
 
 export const verifyEmail = async ({ body: { email } }) => {
   const token = randomBytes(256).toString('hex');
-  const url = '' //figure this out
+  const url = `${Bun.env.CLIENT_URL!}/emails/verify?token=${token}` //figure this out
+  const expiresAt = Date.now() + 5 * 60000
 
-  // // persist to cache in the future
-  // await persistVerificationToken(email, token)
+  // persist to cache in the future
+  await updateVerificationToken(email, token, expiresAt)
   const res = await enqueueVerificationEmail(email, url)
   console.log(await res.text())
 }
@@ -143,5 +144,15 @@ export const verifyEmail = async ({ body: { email } }) => {
 export const verifyEmailShape = {
   body: t.Object({
     email: t.String()
+  })
+}
+
+export const getUserEmails = async ({ body: { userId } }) =>
+  // check jwt first
+  await getEmails(userId)
+
+export const getUserEmailsShape = {
+  body: t.Object({
+    userId: t.String()
   })
 }

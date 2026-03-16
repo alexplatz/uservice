@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "../../store/auth";
+import { useUserStore } from "../../store/user";
 import { isAuthed } from "../../utils/dashboard";
 
 export const Route = createFileRoute('/dashboard')({
@@ -16,10 +17,10 @@ export const Route = createFileRoute('/dashboard')({
     }
   },
   component: () => {
-    const { user } = useAuthStore()
+    const { username } = useUserStore.getState()
 
     return <>
-      <h1>{user.username}</h1>
+      <h1>{username}</h1>
       <Outlet />
     </>
   }

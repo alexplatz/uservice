@@ -5,9 +5,9 @@ const enqueueVerificationEmailServer = (serverUrl: string) => async (to: string,
   await fetch(`${serverUrl}/email/verification`, {
     method: "POST",
     // only for local testing
-    // tls: {
-    //   rejectUnauthorized: false,
-    // },
+    tls: {
+      rejectUnauthorized: false,
+    },
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to,

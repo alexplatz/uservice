@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useAuthStore } from "../../store/auth";
+import { useUserStore } from "../../store/user"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -8,42 +8,57 @@ import {
   ItemContent,
   ItemTitle,
 } from "@/components/ui/item"
+import { getEmails } from "../../api/client";
+import type { emailData } from "@/types";
 
 export const Route = createFileRoute('/dashboard/emails')({
+  beforeLoad: async () => {
+    const { id, emails } = useUserStore.getState()
+
+    if (!emails?.length) {
+      const { data, err } = await getEmails(id)
+      if (err) {
+        console.log(err)
+      } else {
+        useUserStore.setState({ emails: data })
+      }
+    }
+  },
   component: () => {
-    const { user } = useAuthStore()
-    console.log('in new component')
+    const { emails } = useUserStore()
 
-
-    return <>
-      <EmailsList
-        title="emails"
-        emails={[{
-          emailId: 1,
-          email: user.email,
-          verified: false
-        }]}
-      />
-    </>
+    return <>{
+      emails?.length ?
+        <EmailsList
+          title="emails"
+          emails={emails}
+        /> :
+        <p>No emails... 🤔</p>
+    }</>
   }
 })
 
-const EmailsList = ({ title, emails }) =>
+const EmailsList = ({ title, emails }: { title: string, emails: emailData[] }) =>
   <div>
     <h2>{title}</h2>
     <ul>
-      {emails.map(({ emailId, email, verified }) =>
-        <EmailsListItem emailId={emailId} email={email} verified={verified} />
+      {emails.map(({ id, email, isPrimary, verified }: emailData) =>
+        <EmailsListItem id={id} email={email} isPrimary={isPrimary} verified={verified} />
       )}
     </ul>
   </div>
 
-const EmailsListItem = ({ emailId, email, verified }) =>
-  <li key={emailId}>
+const EmailsListItem = ({ id, email, isPrimary, verified }: emailData) =>
+  <li key={id}>
     <Item>
       <ItemContent>
         <ItemTitle>{email}</ItemTitle>
       </ItemContent>
+      <ItemContent>{
+        isPrimary ?
+          null :
+          <Button onClick={() => console.log('TODO')}>Make Primary</Button>
+      }</ItemContent>
       {verified ?
         <ItemActions>
           <Button onClick={() => console.log('hit')}>Verify</Button>

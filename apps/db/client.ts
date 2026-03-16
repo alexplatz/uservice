@@ -1,7 +1,7 @@
 import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite'
 import { eq } from 'drizzle-orm'
 import { Database } from 'bun:sqlite'
-import { users, challenges, credentials, sessions } from './schema'
+import { users, challenges, credentials, sessions, emails } from './schema'
 
 // in practice, this would be a secrets managed url.
 // also, client is executed by server while embedded
@@ -17,7 +17,17 @@ const getUserDb = (db: BunSQLiteDatabase) => async (userId) =>
   await db.select().from(users).where(eq(users.id, userId))
 
 const persistUserDb = (db: BunSQLiteDatabase) => async (email, username) =>
-  await db.insert(users).values([{ email, username }]).returning()
+  await db.transaction(async (tx) => {
+    const [dbUser] = await tx.insert(users).values([{ username }]).returning()
+    await tx.insert(emails).values([{ email, userId: dbUser.id, isPrimary: true }]).returning()
+
+    return tx
+      .select()
+      .from(users)
+      .leftJoin(emails, eq(users.id, emails.userId))
+      .where(eq(emails.email, email))
+      .limit(1)
+  })
 
 const persistChallengeDb = (db: BunSQLiteDatabase) => async (challengeId, challenge) =>
   await db
@@ -56,6 +66,16 @@ const getSessionDb = (db: BunSQLiteDatabase) => async (refreshToken) =>
 const deleteSessionDb = (db: BunSQLiteDatabase) => async (familyId) =>
   await db.delete(sessions).where(eq(sessions.familyId, familyId))
 
+const updateVerificationTokenDb = (db: BunSQLiteDatabase) => async (email, token, expiresAt) =>
+  await db
+    .update(emails)
+    .set({
+      vToken: token,
+      vTokenExpiresAt: expiresAt
+    })
+    .where(eq(emails.email, email))
+    .returning()
+
 
 /* composite queries */
 
@@ -67,6 +87,18 @@ const getCredentialWithUserDb = (db: BunSQLiteDatabase) => async (credentialId) 
     .where(eq(credentials.id, credentialId))
     .limit(1)
 
+const getEmailsDb = (db: BunSQLiteDatabase) => async (userId) =>
+  await db
+    .select({
+      id: emails.id,
+      email: emails.email,
+      isPrimary: emails.isPrimary,
+      verified: emails.verified
+    })
+    .from(emails)
+    .leftJoin(users, eq(users.id, emails.userId))
+    .where(eq(users.id, userId))
+
 
 /* exports */
 
@@ -76,12 +108,16 @@ export const [
   persistChallenge, getChallenge, deleteChallenge,
   persistCredential,
   persistSession, getSession, deleteSession,
-  getCredentialWithUser
+  getCredentialWithUser,
+  updateVerificationToken,
+  getEmails
 ] = [
     getAllUsersDb(db),
     persistUserDb(db), getUserDb(db),
     persistChallengeDb(db), getChallengeDb(db), deleteChallengeDb(db),
     persistCredentialDb(db),
     persistSessionDb(db), getSessionDb(db), deleteSessionDb(db),
-    getCredentialWithUserDb(db)
+    getCredentialWithUserDb(db),
+    updateVerificationTokenDb(db),
+    getEmailsDb(db)
   ]

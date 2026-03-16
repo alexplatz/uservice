@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuthStore } from "../store/auth";
+import { useUserStore } from "../store/user";
 import { login } from "../api/client";
 
 export const Route = createFileRoute('/login')({
@@ -11,7 +12,8 @@ function Login() {
   const { redirect } = Route.useSearch()
   const navigate = Route.useNavigate()
 
-  const { setJwt, setUser } = useAuthStore()
+  const { setJwt } = useAuthStore()
+  const { setId, setUsername } = useUserStore()
   const [error, setError] = useState('')
 
   const handleClick = async () => {
@@ -20,10 +22,11 @@ function Login() {
     if (error) {
       setError(error.message)
     } else {
-      const { email, username, jwt } = data
+      const { userId, username, jwt } = data
 
       setJwt(jwt)
-      setUser({ email, username })
+      setUsername(username)
+      setId(userId)
       navigate({ to: redirect })
     }
   }
