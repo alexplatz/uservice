@@ -1,5 +1,7 @@
 import { deleteSession, getSession, persistSession } from "../../db/client"
 
+const { randomBytes } = await import('node:crypto');
+
 export const refreshJwts = async (status, refresh, access, auth, jwt) => {
   const refreshPayload = await refresh.verify(auth.value)
 
@@ -69,3 +71,11 @@ const setCookie = (cookie, value) => {
     path: '/'
   })
 }
+
+export const generateMagicToken = () => randomBytes(256).toString('hex')
+
+export const generateMagicTokenRecord = async (token: string) => ({
+  tokenHash: await Bun.password.hash(token),
+  createdAt: new Date(Date.now()),
+  expiresAt: new Date(Date.now() + 10 * 60000)
+})

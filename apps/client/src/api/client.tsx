@@ -53,10 +53,19 @@ const loginServer = (server, passkeyClient) => async () => {
 const getEmailsServer = (server) => async (userId) =>
   await server.user.emails.post({ userId })
 
+const verifyEmailServer = (server) => async (email) =>
+  await server.user.email.verify.post({ email })
+
+
+const magicLinkLoginServer = (server) => async (token: string) =>
+  await server.user.verify.post({ token })
+
 export const [
   register, login, refresh,
-  getEmails
+  getEmails, verifyEmail,
+  magicLinkLogin
 ] = [
     registerServer(server, client), loginServer(server, client), refreshServer(server),
-    getEmailsServer(server)
+    getEmailsServer(server), verifyEmailServer(server),
+    magicLinkLoginServer(server)
   ]

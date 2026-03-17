@@ -1,9 +1,8 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, getEmails, persistChallenge, persistCredential, persistUser, updateVerificationToken } from "../../db/client"
+import { createMagicToken, deleteChallenge, getChallenge, getCredentialWithUser, getEmails, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../db/client"
 import { server } from '@passwordless-id/webauthn'
-import { createJwts, refreshJwts } from "./utils"
+import { createJwts, generateMagicToken, generateMagicTokenRecord, refreshJwts } from "./utils"
 import { enqueueVerificationEmail } from "../../workers/src/client";
-const { randomBytes } = await import('node:crypto');
 
 export const challenge = async ({ body: { challengeId } }) => {
   const challenge = server.randomChallenge()
@@ -131,14 +130,13 @@ export const loginShape = {
 }
 
 export const verifyEmail = async ({ body: { email } }) => {
-  const token = randomBytes(256).toString('hex');
-  const url = `${Bun.env.CLIENT_URL!}/emails/verify?token=${token}` //figure this out
-  const expiresAt = Date.now() + 5 * 60000
+  const token = generateMagicToken()
+  const { tokenHash, createdAt, expiresAt } = await generateMagicTokenRecord(token)
+  const url = `${Bun.env.CLIENT_URL!}?token=${token}`
 
-  // persist to cache in the future
-  await updateVerificationToken(email, token, expiresAt)
-  const res = await enqueueVerificationEmail(email, url)
-  console.log(await res.text())
+  await createMagicToken(email, tokenHash, createdAt, expiresAt)
+
+  return await enqueueVerificationEmail(email, url)
 }
 
 export const verifyEmailShape = {
@@ -154,5 +152,38 @@ export const getUserEmails = async ({ body: { userId } }) =>
 export const getUserEmailsShape = {
   body: t.Object({
     userId: t.String()
+  })
+}
+
+export const verifyMagicLink = async ({ refresh, access, cookie, body: { token } }) => {
+  const newTokenHash = await Bun.password.hash(token)
+  console.log({ newTokenHash })
+
+  const {
+    user,
+    email,
+    verified,
+    magicToken: { expiresAt, tokenHash }
+  } = await getMagicTokenDetails(newTokenHash)
+
+
+  console.log({ expiresAt })
+  if (expiresAt.getTime() < Date.now()) { return status(401, "Token expired") }
+
+  const match = await Bun.password.verify(token, tokenHash)
+
+  if (!match) { return status(401, "Invalid token") }
+
+  if (!verified) { await updateEmailVerified(email) }
+
+  return createJwts(refresh, access, cookie['auth'], user)
+}
+
+export const verifyMagicLinkShape = {
+  refresh: t.String(),
+  access: t.String(),
+  cookie: t.Object({}),
+  body: t.Object({
+    token: t.String(),
   })
 }

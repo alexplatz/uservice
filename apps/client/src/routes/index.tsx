@@ -1,4 +1,9 @@
+import { magicLinkLogin } from "@/api/client";
 import { createFileRoute } from "@tanstack/react-router";
+
+type IndexSearch = {
+  token?: string
+}
 
 const Index = () =>
   <div className="p-2">
@@ -7,5 +12,12 @@ const Index = () =>
 
 export const Route = createFileRoute('/')({
   component: Index,
+  // convert to zod in the future
+  validateSearch: (search: Record<string, unknown>): IndexSearch => ({
+    token: search?.token as string
+  }),
+  beforeLoad: ({ search: { token } }) => {
+    if (token) { magicLinkLogin(token) }
+  }
 })
 

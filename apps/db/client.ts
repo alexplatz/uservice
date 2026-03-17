@@ -1,7 +1,7 @@
 import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite'
 import { eq } from 'drizzle-orm'
 import { Database } from 'bun:sqlite'
-import { users, challenges, credentials, sessions, emails } from './schema'
+import { users, challenges, credentials, sessions, emails, magicTokens } from './schema'
 
 // in practice, this would be a secrets managed url.
 // also, client is executed by server while embedded
@@ -66,12 +66,40 @@ const getSessionDb = (db: BunSQLiteDatabase) => async (refreshToken) =>
 const deleteSessionDb = (db: BunSQLiteDatabase) => async (familyId) =>
   await db.delete(sessions).where(eq(sessions.familyId, familyId))
 
-const updateVerificationTokenDb = (db: BunSQLiteDatabase) => async (email, token, expiresAt) =>
+
+const createMagicTokenDb = (db: BunSQLiteDatabase) => async (email, tokenHash, createdAt, expiresAt) =>
+  await db.transaction(async (tx) => {
+    const [{ userId }] = await tx
+      .select({ userId: emails.userId })
+      .from(emails)
+      .where(eq(emails.email, email))
+      .limit(1)
+
+    return await tx
+      .insert(magicTokens)
+      .values([{ tokenHash, createdAt, expiresAt, email, userId }])
+      .onConflictDoUpdate({
+        target: magicTokens.email,
+        set: { tokenHash }
+      })
+      .returning()
+  })
+
+const updateMagicTokenDb = (db: BunSQLiteDatabase) => async (email, tokenHash, expiresAt) =>
+  await db
+    .update(magicTokens)
+    .set({
+      tokenHash,
+      expiresAt
+    })
+    .where(eq(emails.email, email))
+    .returning()
+
+const updateEmailVerifiedDb = (db: BunSQLiteDatabase) => async (email) =>
   await db
     .update(emails)
     .set({
-      vToken: token,
-      vTokenExpiresAt: expiresAt
+      verified: true,
     })
     .where(eq(emails.email, email))
     .returning()
@@ -99,6 +127,28 @@ const getEmailsDb = (db: BunSQLiteDatabase) => async (userId) =>
     .leftJoin(users, eq(users.id, emails.userId))
     .where(eq(users.id, userId))
 
+const getMagicTokenDetailsDb = (db: BunSQLiteDatabase) => async (newTokenHash) =>
+  await db.transaction(async (tx) => {
+    const [magicTokenDetails] = await tx
+      .select({
+        magicToken: magicTokens,
+        verified: emails.verified,
+        email: emails.email,
+        user: users,
+      })
+      .from(magicTokens)
+      .innerJoin(emails, eq(emails.id, magicTokens.userId))
+      .innerJoin(users, eq(users.id, magicTokens.userId))
+      .where(eq(magicTokens.tokenHash, newTokenHash))
+      .limit(1)
+
+    await tx
+      .delete(magicTokens)
+      .where(eq(magicTokens.id, magicTokenDetails.magicToken.id))
+
+    return magicTokenDetails
+  })
+
 
 /* exports */
 
@@ -109,8 +159,8 @@ export const [
   persistCredential,
   persistSession, getSession, deleteSession,
   getCredentialWithUser,
-  updateVerificationToken,
-  getEmails
+  createMagicToken, getMagicTokenDetails, updateMagicToken,
+  getEmails, updateEmailVerified,
 ] = [
     getAllUsersDb(db),
     persistUserDb(db), getUserDb(db),
@@ -118,6 +168,6 @@ export const [
     persistCredentialDb(db),
     persistSessionDb(db), getSessionDb(db), deleteSessionDb(db),
     getCredentialWithUserDb(db),
-    updateVerificationTokenDb(db),
-    getEmailsDb(db)
+    createMagicTokenDb(db), getMagicTokenDetailsDb(db), updateMagicTokenDb(db),
+    getEmailsDb(db), updateEmailVerifiedDb(db)
   ]

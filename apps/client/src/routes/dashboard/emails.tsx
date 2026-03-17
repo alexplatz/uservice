@@ -8,7 +8,7 @@ import {
   ItemContent,
   ItemTitle,
 } from "@/components/ui/item"
-import { getEmails } from "../../api/client";
+import { getEmails, verifyEmail } from "../../api/client";
 import type { emailData } from "@/types";
 
 export const Route = createFileRoute('/dashboard/emails')({
@@ -59,9 +59,9 @@ const EmailsListItem = ({ id, email, isPrimary, verified }: emailData) =>
           null :
           <Button onClick={() => console.log('TODO')}>Make Primary</Button>
       }</ItemContent>
-      {verified ?
+      {!verified ?
         <ItemActions>
-          <Button onClick={() => console.log('hit')}>Verify</Button>
+          <Button onClick={async () => await verifyEmail(email)}>Verify</Button>
         </ItemActions> :
         <p>✅Verified</p>
       }
