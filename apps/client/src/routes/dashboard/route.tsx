@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useAuthStore } from "../../store/auth";
 import { useUserStore } from "../../store/user";
 import { isAuthed } from "../../utils/dashboard";
+import { useCounterStore } from "@/store/count";
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: async ({ location }) => {
@@ -17,11 +18,13 @@ export const Route = createFileRoute('/dashboard')({
     }
   },
   component: () => {
-    const { username } = useUserStore.getState()
+    const { username } = useUserStore()
+    const { counter, increment } = useCounterStore()
 
     return <>
       <h1>{username}</h1>
       <Outlet />
+      <button onClick={() => increment(counter)}>{counter}</button>
     </>
   }
 })

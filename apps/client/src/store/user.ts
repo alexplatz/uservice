@@ -1,5 +1,6 @@
 import type { emailData } from '@/types'
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 type UserState = {
   id: string,
@@ -13,12 +14,17 @@ type UserAction = {
   setEmails: (emails: UserState['emails']) => void
 }
 
-export const useUserStore = create<UserState & UserAction>((set) => ({
-  id: '',
-  username: '',
-  emails: [],
-  setId: (id: string) => set(() => ({ id: id })),
-  setUsername: (username: string) => set(() => ({ username: username })),
-  setEmails: (emails: emailData[]) => set(() => ({ emails: emails }))
-}))
+export const useUserStore = create<UserState & UserAction>()(
+  persist(
+    (set) => ({
+      id: '',
+      username: '',
+      emails: [],
+      setId: (id: string) => set(() => ({ id: id })),
+      setUsername: (username: string) => set(() => ({ username: username })),
+      setEmails: (emails: emailData[]) => set(() => ({ emails: emails }))
+    }),
+    { name: 'user-storage' }
+  )
+)
 
