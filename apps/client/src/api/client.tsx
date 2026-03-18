@@ -56,7 +56,6 @@ const getEmailsServer = (server) => async (userId) =>
 const verifyEmailServer = (server) => async (email) =>
   await server.user.email.verify.post({ email })
 
-
 const magicLinkLoginServer = (server) => async (token: string) =>
   await server.user.verify.post({ token })
 

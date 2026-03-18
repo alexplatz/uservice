@@ -44,7 +44,7 @@ export const emails = sqliteTable('emails', {
   id: text('id').notNull().primaryKey().$defaultFn(Bun.randomUUIDv7),
   email: text('email').notNull().unique(),
   isPrimary: integer('isPrimary', { mode: 'boolean' }).notNull().default(false),
-  verified: integer('isPrimary', { mode: 'boolean' }).notNull().default(false),
+  verified: integer('verified', { mode: 'boolean' }).notNull().default(false),
   userId: text('userId').notNull().references(() => users.id)
 })
 

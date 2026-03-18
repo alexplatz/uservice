@@ -75,7 +75,7 @@ const setCookie = (cookie, value) => {
 export const generateMagicToken = () => randomBytes(256).toString('hex')
 
 export const generateMagicTokenRecord = async (token: string) => ({
-  tokenHash: await Bun.password.hash(token),
+  tokenHash: Bun.sha(token, 'hex'),
   createdAt: new Date(Date.now()),
   expiresAt: new Date(Date.now() + 10 * 60000)
 })

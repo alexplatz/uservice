@@ -137,7 +137,7 @@ const getMagicTokenDetailsDb = (db: BunSQLiteDatabase) => async (newTokenHash) =
         user: users,
       })
       .from(magicTokens)
-      .innerJoin(emails, eq(emails.id, magicTokens.userId))
+      .innerJoin(emails, eq(emails.userId, magicTokens.userId))
       .innerJoin(users, eq(users.id, magicTokens.userId))
       .where(eq(magicTokens.tokenHash, newTokenHash))
       .limit(1)

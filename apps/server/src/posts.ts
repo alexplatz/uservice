@@ -156,23 +156,20 @@ export const getUserEmailsShape = {
 }
 
 export const verifyMagicLink = async ({ refresh, access, cookie, body: { token } }) => {
-  const newTokenHash = await Bun.password.hash(token)
-  console.log({ newTokenHash })
+  const newTokenHash = Bun.sha(token, 'hex')
+
+  const magicTokenDetails = await getMagicTokenDetails(newTokenHash)
+
+  if (!magicTokenDetails) { return status(401, "Invalid token") }
 
   const {
     user,
     email,
     verified,
-    magicToken: { expiresAt, tokenHash }
-  } = await getMagicTokenDetails(newTokenHash)
+    magicToken: { expiresAt }
+  } = magicTokenDetails
 
-
-  console.log({ expiresAt })
   if (expiresAt.getTime() < Date.now()) { return status(401, "Token expired") }
-
-  const match = await Bun.password.verify(token, tokenHash)
-
-  if (!match) { return status(401, "Invalid token") }
 
   if (!verified) { await updateEmailVerified(email) }
 
