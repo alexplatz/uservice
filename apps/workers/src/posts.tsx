@@ -5,7 +5,8 @@ import { render } from '@react-email/components'
 import { Queue } from 'bunqueue/client'
 import { randomUUIDv7 } from 'bun'
 import { EmailJob } from './utils'
-import LinkEmail from './emails/link'
+import VerificationLinkEmail from './emails/verificationLink'
+import MagicLinkEmail from './emails/magicLink'
 
 // const otp = ~~(Math.random() * (900_000 - 1)) + 100_000
 
@@ -30,7 +31,10 @@ export const enqueueOtpEmail = (queue: Queue<EmailJob>) => async ({ body: { to, 
   await emailsEnqueue(queue, to, await render(<OTPEmail otp={otp} />))
 
 export const enqueueVerificationEmail = (queue: Queue<EmailJob>) => async ({ body: { to, url } }) =>
-  await emailsEnqueue(queue, to, await render(<LinkEmail link={url} />))
+  await emailsEnqueue(queue, to, await render(<VerificationLinkEmail link={url} />))
+
+export const enqueueMagicLinkEmail = (queue: Queue<EmailJob>) => async ({ body: { to, url } }) =>
+  await emailsEnqueue(queue, to, await render(<MagicLinkEmail link={url} />))
 
 
 
@@ -43,6 +47,13 @@ export const otpEmailShape = {
 }
 
 export const verificationEmailShape = {
+  body: t.Object({
+    to: t.String(),
+    url: t.String()
+  })
+}
+
+export const magicLinkEmailShape = {
   body: t.Object({
     to: t.String(),
     url: t.String()

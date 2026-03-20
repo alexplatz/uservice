@@ -1,4 +1,4 @@
-import { deleteSession, getSession, persistSession } from "../../db/client"
+import { createMagicToken, deleteSession, getSession, persistSession } from "../../db/client"
 
 const { randomBytes } = await import('node:crypto');
 
@@ -79,3 +79,13 @@ export const generateMagicTokenRecord = async (token: string) => ({
   createdAt: new Date(Date.now()),
   expiresAt: new Date(Date.now() + 10 * 60000)
 })
+
+export const createAndSaveMagicToken = async (email: string) => {
+  const token = generateMagicToken()
+  const { tokenHash, createdAt, expiresAt } = await generateMagicTokenRecord(token)
+  const url = `${Bun.env.CLIENT_URL!}?token=${token}`
+
+  await createMagicToken(email, tokenHash, createdAt, expiresAt)
+
+  return { to: email, url }
+}

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuthStore } from "../store/auth";
 import { useUserStore } from "../store/user";
-import { login, verifyEmail } from "../api/client";
+import { createMagicLink, login, verifyEmail } from "../api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -36,7 +36,7 @@ function Login() {
   }
 
   const emailLogin = async (email: string) => {
-    const { error } = await verifyEmail(email)
+    const { error } = await createMagicLink(email)
 
     if (error) {
       setError(error.message)

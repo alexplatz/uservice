@@ -7,6 +7,7 @@ const server = edenTreaty<App>(import.meta.env.VITE_SERVER_URL!, {
   $fetch: { credentials: 'include' }
 })
 
+
 const registerServer = (server, passkeyClient) => async (user: { username: string, email: string }) => {
   const challengeId = crypto.randomUUID()
   const { data, error } = await server.user.challenge.post({ challengeId })
@@ -56,15 +57,18 @@ const getEmailsServer = (server) => async (userId) =>
 const verifyEmailServer = (server) => async (email) =>
   await server.user.email.verify.post({ email })
 
+const createMagicLinkServer = (server) => async (email: string) =>
+  await server.user.login["magic-link"].post({ email })
+
 const magicLinkLoginServer = (server) => async (token: string) =>
   await server.user.verify.post({ token })
 
 export const [
   register, login, refresh,
   getEmails, verifyEmail,
-  magicLinkLogin
+  createMagicLink, magicLinkLogin
 ] = [
     registerServer(server, client), loginServer(server, client), refreshServer(server),
     getEmailsServer(server), verifyEmailServer(server),
-    magicLinkLoginServer(server)
+    createMagicLinkServer(server), magicLinkLoginServer(server)
   ]

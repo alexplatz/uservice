@@ -1,8 +1,8 @@
 import { t, status } from "elysia"
-import { createMagicToken, deleteChallenge, getChallenge, getCredentialWithUser, getEmails, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../db/client"
+import { deleteChallenge, getChallenge, getCredentialWithUser, getEmails, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../db/client"
 import { server } from '@passwordless-id/webauthn'
-import { createJwts, generateMagicToken, generateMagicTokenRecord, refreshJwts } from "./utils"
-import { enqueueVerificationEmail } from "../../workers/src/client";
+import { createAndSaveMagicToken, createJwts, refreshJwts } from "./utils"
+import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../workers/src/client";
 
 export const challenge = async ({ body: { challengeId } }) => {
   const challenge = server.randomChallenge()
@@ -130,16 +130,24 @@ export const loginShape = {
 }
 
 export const verifyEmail = async ({ body: { email } }) => {
-  const token = generateMagicToken()
-  const { tokenHash, createdAt, expiresAt } = await generateMagicTokenRecord(token)
-  const url = `${Bun.env.CLIENT_URL!}?token=${token}`
-
-  await createMagicToken(email, tokenHash, createdAt, expiresAt)
-
-  return await enqueueVerificationEmail(email, url)
+  return await enqueueVerificationEmail(
+    await createAndSaveMagicToken(email)
+  )
 }
 
 export const verifyEmailShape = {
+  body: t.Object({
+    email: t.String()
+  })
+}
+
+export const magicLinkEmail = async ({ body: { email } }) => {
+  return await enqueueMagicLinkEmail(
+    await createAndSaveMagicToken(email)
+  )
+}
+
+export const magicLinkEmailShape = {
   body: t.Object({
     email: t.String()
   })

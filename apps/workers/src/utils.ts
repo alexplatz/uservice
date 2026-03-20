@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 
 
 
-// Generic email sender
+/***** Generic email sender *****/
 const sendEmailFn = (subject: string) => async (job: Job<EmailJob>) =>
   await transporter.sendMail({
     from: Bun.env.EMAIL_USER!,
@@ -32,11 +32,12 @@ const sendEmailFn = (subject: string) => async (job: Job<EmailJob>) =>
     html: job.data.html,
   })
 
-// Email sender derivatives
+/***** Email sender derivatives *****/
 const sendVerificationEmail = sendEmailFn('Verify your email address')
+const sendMagicLinkEmail = sendEmailFn('One time login link')
 
 
-// Generic job processors
+/***** Generic job processors *****/
 const processJobFn = (processFn: emailProcessFn) => async (job: Job<EmailJob>) => {
   console.log(`🞷 Processing job ${job.data.id} ...`)
 
@@ -53,5 +54,6 @@ const processJobFn = (processFn: emailProcessFn) => async (job: Job<EmailJob>) =
   return { sent: true }
 }
 
-// Job processor derivatives
+/***** Job processor derivatives *****/
 export const processVerificationJob = processJobFn(sendVerificationEmail)
+export const processMagicLinkJob = processJobFn(sendMagicLinkEmail)

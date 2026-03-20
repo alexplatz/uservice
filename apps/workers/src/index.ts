@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
-import { enqueueVerificationEmail, verificationEmailShape } from './posts'
+import { enqueueMagicLinkEmail, enqueueVerificationEmail, magicLinkEmailShape, verificationEmailShape } from './posts'
 import { Job, Queue, shutdownManager, Worker } from 'bunqueue/client'
 import { EmailJob, processVerificationJob } from './utils'
 
@@ -25,6 +25,7 @@ const app = new Elysia()
 
   .get('/', 'Hello World')
   .post('/email/verification', enqueueVerificationEmail(emailQueue), verificationEmailShape)
+  .post('/email/magic-link', enqueueMagicLinkEmail(emailQueue), magicLinkEmailShape)
 
   .listen(Bun.env.WORKERS_PORT! || 8002)
 

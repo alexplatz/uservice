@@ -1,8 +1,9 @@
 const workersUrl = Bun.env.WORKERS_URL!
 
 // need to figure out better cert strategy
-const enqueueVerificationEmailServer = (serverUrl: string) => async (to: string, url: string) =>
-  await fetch(`${serverUrl}/email/verification`, {
+/***** generic link email enqueue function *****/
+const enqueueLinkEmailServer = (serverPath: string) => (serverUrl: string) => async ({ to, url }: { to: string, url: string }) =>
+  await fetch(`${serverUrl}/${serverPath}`, {
     method: "POST",
     // only for local testing
     tls: {
@@ -15,6 +16,13 @@ const enqueueVerificationEmailServer = (serverUrl: string) => async (to: string,
     }),
   });
 
+
+/***** link email enqueue function derivatives *****/
+const enqueueVerificationEmailServer = enqueueLinkEmailServer('email/verification')
+const enqueueMagicLinkEmailServer = enqueueLinkEmailServer('email/magic-link')
+
+
+
 const enqueueOtpEmailServer = (serverUrl: string) => async (to: string, otp: number) =>
   await fetch(`${serverUrl}/email/otp`, {
     method: "POST",
@@ -25,4 +33,15 @@ const enqueueOtpEmailServer = (serverUrl: string) => async (to: string, otp: num
     }),
   });
 
-export const [enqueueVerificationEmail, enqueueOtpEmail] = [enqueueVerificationEmailServer(workersUrl), enqueueOtpEmailServer(workersUrl)]
+
+
+
+export const [
+  enqueueVerificationEmail,
+  enqueueMagicLinkEmail,
+  enqueueOtpEmail
+] = [
+    enqueueVerificationEmailServer(workersUrl),
+    enqueueMagicLinkEmailServer(workersUrl),
+    enqueueOtpEmailServer(workersUrl)
+  ]
