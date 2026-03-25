@@ -179,9 +179,13 @@ export const verifyMagicLink = async ({ refresh, access, cookie, body: { token }
 
   if (expiresAt.getTime() < Date.now()) { return status(401, "Token expired") }
 
-  if (!verified) { await updateEmailVerified(email) }
-
-  return createJwts(refresh, access, cookie['auth'], user)
+  return !verified ? {
+    email: await updateEmailVerified(email),
+    ... await createJwts(refresh, access, cookie['auth'], user)
+  } : {
+    email: undefined,
+    ... await createJwts(refresh, access, cookie['auth'], user)
+  }
 }
 
 export const verifyMagicLinkShape = {

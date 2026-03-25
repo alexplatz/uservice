@@ -11,7 +11,7 @@ const MagicLinkEmail = ({ link }: { link: string }) =>
         <Text className="text-mauve-500 my-0">
           Use the following button to login
         </Text>
-        <Button className="text-5xl font-bold pt-2" href={link}>Verify</Button>
+        <Button className="text-5xl font-bold pt-2" href={link}>Login</Button>
         <Text className="text-mauve-400 font-light text-xs pb-4">
           This code is valid for 10 minutes
         </Text>

@@ -10,7 +10,7 @@ import MagicLinkEmail from './emails/magicLink'
 
 // const otp = ~~(Math.random() * (900_000 - 1)) + 100_000
 
-// Generic email enqueue function for reusability
+/****** Generic email enqueue function for reusability ******/
 const emailsEnqueue = async (queue: Queue<EmailJob>, to: string, html: string) => {
   const id = randomUUIDv7()
   console.log(`enqueing job ${id}`)
@@ -26,7 +26,7 @@ const emailsEnqueue = async (queue: Queue<EmailJob>, to: string, html: string) =
 
 
 
-/***** Enqueue function derivatives ******/
+/****** Enqueue function derivatives ******/
 export const enqueueOtpEmail = (queue: Queue<EmailJob>) => async ({ body: { to, otp } }) =>
   await emailsEnqueue(queue, to, await render(<OTPEmail otp={otp} />))
 
@@ -38,7 +38,7 @@ export const enqueueMagicLinkEmail = (queue: Queue<EmailJob>) => async ({ body: 
 
 
 
-/***** Post shapes ******/
+/****** Post shapes ******/
 export const otpEmailShape = {
   body: t.Object({
     to: t.String(),
