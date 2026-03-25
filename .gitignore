@@ -7,3 +7,4 @@ node_modules/
 apps/db/drizzle/
 .tanstack/
 .env
+**/*.pem

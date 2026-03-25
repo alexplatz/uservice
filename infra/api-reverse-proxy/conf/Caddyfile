@@ -19,5 +19,6 @@
 
 {$SERVER_PROXY} {
 	reverse_proxy localhost:{$SERVER_PORT}
-	tls internal
+	# tls internal
+	tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
 }
