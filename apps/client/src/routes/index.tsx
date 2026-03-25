@@ -1,6 +1,7 @@
 import { magicLinkLogin } from "@/api/client";
 import { useAuthStore } from "@/store/auth";
 import { useUserStore } from "@/store/user";
+import type { emailData } from "@/types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -9,7 +10,7 @@ type IndexSearch = {
 }
 
 const Index = () => {
-  const [error, setError] = useState('')
+  const [error, _setError] = useState('')
 
   return (
     <div>
@@ -34,10 +35,25 @@ export const Route = createFileRoute('/')({
       if (error) {
         console.log(error.message)
       } else {
-        const { userId, username, jwt } = data
+        const {
+          userId,
+          username,
+          jwt,
+          email
+        }: {
+          userId: string,
+          username: string,
+          jwt: string,
+          email: undefined | emailData
+        } = data
+        console.log(data)
 
         useAuthStore.setState({ jwt })
-        useUserStore.setState({ username, id: userId })
+        useUserStore.setState({
+          username,
+          id: userId,
+          emails: updateVerifiedCache(useUserStore.getState().emails, email)
+        })
 
         throw redirect({
           to: '/dashboard'
@@ -47,3 +63,8 @@ export const Route = createFileRoute('/')({
   }
 })
 
+const updateVerifiedCache = (emails: emailData[], verifiedEmail: undefined | emailData) =>
+  verifiedEmail ? [
+    ...emails.filter(email => email.email !== verifiedEmail.email),
+    verifiedEmail
+  ] : emails
