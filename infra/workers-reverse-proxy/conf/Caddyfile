@@ -16,8 +16,8 @@
 # 	}
 # }
 
-{$VITE_CLIENT_PROXY} {
-	reverse_proxy localhost:{$VITE_CLIENT_PORT}
+{$WORKERS_PROXY} {
+	reverse_proxy localhost:{$WORKERS_PORT}
 	tls internal
 
 	# log {

@@ -1,7 +1,8 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, persistChallenge, persistCredential, persistUser } from "../../db/client"
+import { deleteChallenge, getChallenge, getCredentialWithUser, getEmails, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../db/client"
 import { server } from '@passwordless-id/webauthn'
-import { createJwts, refreshJwts } from "./utils"
+import { createAndSaveMagicToken, createJwts, refreshJwts } from "./utils"
+import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../workers/src/client";
 
 export const challenge = async ({ body: { challengeId } }) => {
   const challenge = server.randomChallenge()
@@ -31,7 +32,7 @@ export const register = async ({ refresh, access, cookie, body: { challengeId, e
   const { credential: { id, publicKey, algorithm, transports } } = await server.verifyRegistration(registration, expected)
 
   await deleteChallenge(challengeId)
-  const [user] = await persistUser(email, username)
+  const [{ users: user }] = await persistUser(email, username)
 
   await persistCredential({ id, publicKey, algorithm, transports, userId: user.id })
 
@@ -128,3 +129,66 @@ export const loginShape = {
   })
 }
 
+export const verifyEmail = async ({ body: { email } }) => {
+  return await enqueueVerificationEmail(
+    await createAndSaveMagicToken(email)
+  )
+}
+
+export const verifyEmailShape = {
+  body: t.Object({
+    email: t.String()
+  })
+}
+
+export const magicLinkEmail = async ({ body: { email } }) => {
+  return await enqueueMagicLinkEmail(
+    await createAndSaveMagicToken(email)
+  )
+}
+
+export const magicLinkEmailShape = {
+  body: t.Object({
+    email: t.String()
+  })
+}
+
+export const getUserEmails = async ({ body: { userId } }) =>
+  // check jwt first
+  await getEmails(userId)
+
+export const getUserEmailsShape = {
+  body: t.Object({
+    userId: t.String()
+  })
+}
+
+export const verifyMagicLink = async ({ refresh, access, cookie, body: { token } }) => {
+  const newTokenHash = Bun.sha(token, 'hex')
+
+  const magicTokenDetails = await getMagicTokenDetails(newTokenHash)
+
+  if (!magicTokenDetails) { return status(401, "Invalid token") }
+
+  const {
+    user,
+    email,
+    verified,
+    magicToken: { expiresAt }
+  } = magicTokenDetails
+
+  if (expiresAt.getTime() < Date.now()) { return status(401, "Token expired") }
+
+  if (!verified) { await updateEmailVerified(email) }
+
+  return createJwts(refresh, access, cookie['auth'], user)
+}
+
+export const verifyMagicLinkShape = {
+  refresh: t.String(),
+  access: t.String(),
+  cookie: t.Object({}),
+  body: t.Object({
+    token: t.String(),
+  })
+}

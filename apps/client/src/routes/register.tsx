@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuthStore } from "../store/auth";
+import { useUserStore } from "../store/user";
 import { useState } from "react";
 import { register } from "../api/client";
-import type { User } from "../types";
+import type { RegisterUser } from "../types";
 
 export const Route = createFileRoute('/register')({
   component: Register
@@ -10,27 +11,24 @@ export const Route = createFileRoute('/register')({
 
 function Register() {
   const navigate = Route.useNavigate()
-  const { setJwt, setUser } = useAuthStore()
+  const { setJwt } = useAuthStore()
+  const { setId, setUsername } = useUserStore()
 
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
+  const [inputUsername, setInputUsername] = useState('')
+  const [inputEmail, setInputEmail] = useState('')
   const [error, setError] = useState('')
 
-  const inputtedUser = {
-    username,
-    email
-  }
-
-  const handleClick = async (inputtedUser: User) => {
+  const handleClick = async (inputtedUser: RegisterUser) => {
     const { data, error } = await register(inputtedUser)
 
     if (error) {
       setError(error.message)
     } else {
-      const { email, username, jwt } = data
+      const { userId, username, jwt } = data
 
       setJwt(jwt)
-      setUser({ username, email })
+      setId(userId)
+      setUsername(username)
       navigate({ to: '/dashboard' })
     }
   }
@@ -42,15 +40,15 @@ function Register() {
     <input
       type="text"
       placeholder="username"
-      onBlur={(e) => setUsername(e.target.value)}
+      onBlur={(e) => setInputUsername(e.target.value)}
     />
     <input
       type="text"
       placeholder="email"
-      onBlur={(e) => setEmail(e.target.value)}
+      onBlur={(e) => setInputEmail(e.target.value)}
     />
 
-    <button onClick={() => handleClick(inputtedUser)}>
+    <button onClick={() => handleClick({ username: inputUsername, email: inputEmail })}>
       Submit
     </button>
   </div>

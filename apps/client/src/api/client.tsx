@@ -1,14 +1,14 @@
 import { edenTreaty } from "@elysiajs/eden"
 import type { App } from "../../../server/src"
 import { client } from "@passwordless-id/webauthn"
-import type { User } from "../types"
 
 
 const server = edenTreaty<App>(import.meta.env.VITE_SERVER_URL!, {
   $fetch: { credentials: 'include' }
 })
 
-const registerServer = (server, passkeyClient) => async (user: User) => {
+
+const registerServer = (server, passkeyClient) => async (user: { username: string, email: string }) => {
   const challengeId = crypto.randomUUID()
   const { data, error } = await server.user.challenge.post({ challengeId })
 
@@ -51,8 +51,24 @@ const loginServer = (server, passkeyClient) => async () => {
   }
 }
 
+const getEmailsServer = (server) => async (userId) =>
+  await server.user.emails.post({ userId })
+
+const verifyEmailServer = (server) => async (email) =>
+  await server.user.email.verify.post({ email })
+
+const createMagicLinkServer = (server) => async (email: string) =>
+  await server.user.login["magic-link"].post({ email })
+
+const magicLinkLoginServer = (server) => async (token: string) =>
+  await server.user.verify.post({ token })
+
 export const [
-  register, login, refresh
+  register, login, refresh,
+  getEmails, verifyEmail,
+  createMagicLink, magicLinkLogin
 ] = [
-    registerServer(server, client), loginServer(server, client), refreshServer(server)
+    registerServer(server, client), loginServer(server, client), refreshServer(server),
+    getEmailsServer(server), verifyEmailServer(server),
+    createMagicLinkServer(server), magicLinkLoginServer(server)
   ]
