@@ -103,6 +103,7 @@ const updateEmailVerifiedDb = (db: BunSQLiteDatabase) => async (email) =>
     })
     .where(eq(emails.email, email))
     .returning()
+    .get()
 
 
 /* composite queries */
