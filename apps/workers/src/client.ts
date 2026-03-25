@@ -6,9 +6,9 @@ const enqueueLinkEmailServer = (serverPath: string) => (serverUrl: string) => as
   await fetch(`${serverUrl}/${serverPath}`, {
     method: "POST",
     // only for local testing
-    tls: {
-      rejectUnauthorized: false,
-    },
+    // tls: {
+    //   rejectUnauthorized: false,
+    // },
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       to,
