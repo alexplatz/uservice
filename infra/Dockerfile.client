@@ -6,10 +6,11 @@ COPY apps ./
 WORKDIR /apps/client
 
 RUN bun install --frozen-lockfile
-RUN chown -R bun:bun node_modules/.vite
+# RUN mkdir -p node_modules/.vite && chown -R bun:bun node_modules/.vite
+# RUN mkdir -p .tanstack && chown -R bun:bun .tanstack
 
 EXPOSE 8001
 
-USER bun
+# USER bun
 CMD [ "bun", "run", "start" ]
 

@@ -1,4 +1,6 @@
-import { deleteSession, getSession, persistSession } from "../../db/client"
+import { createMagicToken, deleteSession, getSession, persistSession } from "../../db/client"
+
+const { randomBytes } = await import('node:crypto');
 
 export const refreshJwts = async (status, refresh, access, auth, jwt) => {
   const refreshPayload = await refresh.verify(auth.value)
@@ -7,7 +9,7 @@ export const refreshJwts = async (status, refresh, access, auth, jwt) => {
     return status(401, 'no refreshToken')
   }
 
-  const { user } = await refresh.verify(jwt)
+  const { user } = await access.verify(jwt)
 
   if (!user) {
     return status(401, 'no jwt')
@@ -37,8 +39,8 @@ export const refreshJwts = async (status, refresh, access, auth, jwt) => {
 
   return {
     jwt: newAccess,
+    userId: user.id,
     username: user.username,
-    email: user.email
   }
 }
 
@@ -53,8 +55,8 @@ export const createJwts = async (refresh, access, auth, user) => {
 
   return {
     jwt: newAccess,
+    userId: user.id,
     username: user.username,
-    email: user.email
   }
 }
 
@@ -68,4 +70,22 @@ const setCookie = (cookie, value) => {
     maxAge: 86400,
     path: '/'
   })
+}
+
+export const generateMagicToken = () => randomBytes(256).toString('hex')
+
+export const generateMagicTokenRecord = async (token: string) => ({
+  tokenHash: Bun.sha(token, 'hex'),
+  createdAt: new Date(Date.now()),
+  expiresAt: new Date(Date.now() + 10 * 60000)
+})
+
+export const createAndSaveMagicToken = async (email: string) => {
+  const token = generateMagicToken()
+  const { tokenHash, createdAt, expiresAt } = await generateMagicTokenRecord(token)
+  const url = `${Bun.env.CLIENT_URL!}?token=${token}`
+
+  await createMagicToken(email, tokenHash, createdAt, expiresAt)
+
+  return { to: email, url }
 }

@@ -1,10 +1,17 @@
 import { db } from "./client";
-import { users, credentials } from "./schema";
+import { users, emails, credentials } from "./schema";
 
 const [userResult] = await db.insert(users).values([
   {
-    email: 'bat@squat.org',
     username: 'bat',
+  }
+]).returning()
+
+const [emailResult] = await db.insert(emails).values([
+  {
+    email: 'bat@squat.org',
+    userId: userResult.id,
+    isPrimary: true
   }
 ]).returning()
 
@@ -18,4 +25,4 @@ const credentialResult = await db.insert(credentials).values([
   }
 ]).returning()
 
-console.log('seeded db with: ', { userResult, credentialResult })
+console.log('seeded db with: ', { userResult, emailResult, credentialResult })

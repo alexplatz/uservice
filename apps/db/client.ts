@@ -1,7 +1,7 @@
 import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite'
 import { eq } from 'drizzle-orm'
 import { Database } from 'bun:sqlite'
-import { users, challenges, credentials, sessions } from './schema'
+import { users, challenges, credentials, sessions, emails, magicTokens } from './schema'
 
 // in practice, this would be a secrets managed url.
 // also, client is executed by server while embedded
@@ -17,7 +17,17 @@ const getUserDb = (db: BunSQLiteDatabase) => async (userId) =>
   await db.select().from(users).where(eq(users.id, userId))
 
 const persistUserDb = (db: BunSQLiteDatabase) => async (email, username) =>
-  await db.insert(users).values([{ email, username }]).returning()
+  await db.transaction(async (tx) => {
+    const [dbUser] = await tx.insert(users).values([{ username }]).returning()
+    await tx.insert(emails).values([{ email, userId: dbUser.id, isPrimary: true }]).returning()
+
+    return tx
+      .select()
+      .from(users)
+      .leftJoin(emails, eq(users.id, emails.userId))
+      .where(eq(emails.email, email))
+      .limit(1)
+  })
 
 const persistChallengeDb = (db: BunSQLiteDatabase) => async (challengeId, challenge) =>
   await db
@@ -57,6 +67,44 @@ const deleteSessionDb = (db: BunSQLiteDatabase) => async (familyId) =>
   await db.delete(sessions).where(eq(sessions.familyId, familyId))
 
 
+const createMagicTokenDb = (db: BunSQLiteDatabase) => async (email, tokenHash, createdAt, expiresAt) =>
+  await db.transaction(async (tx) => {
+    const [{ userId }] = await tx
+      .select({ userId: emails.userId })
+      .from(emails)
+      .where(eq(emails.email, email))
+      .limit(1)
+
+    return await tx
+      .insert(magicTokens)
+      .values([{ tokenHash, createdAt, expiresAt, email, userId }])
+      .onConflictDoUpdate({
+        target: magicTokens.email,
+        set: { tokenHash }
+      })
+      .returning()
+  })
+
+const updateMagicTokenDb = (db: BunSQLiteDatabase) => async (email, tokenHash, expiresAt) =>
+  await db
+    .update(magicTokens)
+    .set({
+      tokenHash,
+      expiresAt
+    })
+    .where(eq(emails.email, email))
+    .returning()
+
+const updateEmailVerifiedDb = (db: BunSQLiteDatabase) => async (email) =>
+  await db
+    .update(emails)
+    .set({
+      verified: true,
+    })
+    .where(eq(emails.email, email))
+    .returning()
+
+
 /* composite queries */
 
 const getCredentialWithUserDb = (db: BunSQLiteDatabase) => async (credentialId) =>
@@ -67,6 +115,40 @@ const getCredentialWithUserDb = (db: BunSQLiteDatabase) => async (credentialId) 
     .where(eq(credentials.id, credentialId))
     .limit(1)
 
+const getEmailsDb = (db: BunSQLiteDatabase) => async (userId) =>
+  await db
+    .select({
+      id: emails.id,
+      email: emails.email,
+      isPrimary: emails.isPrimary,
+      verified: emails.verified
+    })
+    .from(emails)
+    .leftJoin(users, eq(users.id, emails.userId))
+    .where(eq(users.id, userId))
+
+const getMagicTokenDetailsDb = (db: BunSQLiteDatabase) => async (newTokenHash) =>
+  await db.transaction(async (tx) => {
+    const [magicTokenDetails] = await tx
+      .select({
+        magicToken: magicTokens,
+        verified: emails.verified,
+        email: emails.email,
+        user: users,
+      })
+      .from(magicTokens)
+      .innerJoin(emails, eq(emails.userId, magicTokens.userId))
+      .innerJoin(users, eq(users.id, magicTokens.userId))
+      .where(eq(magicTokens.tokenHash, newTokenHash))
+      .limit(1)
+
+    await tx
+      .delete(magicTokens)
+      .where(eq(magicTokens.id, magicTokenDetails.magicToken.id))
+
+    return magicTokenDetails
+  })
+
 
 /* exports */
 
@@ -76,12 +158,16 @@ export const [
   persistChallenge, getChallenge, deleteChallenge,
   persistCredential,
   persistSession, getSession, deleteSession,
-  getCredentialWithUser
+  getCredentialWithUser,
+  createMagicToken, getMagicTokenDetails, updateMagicToken,
+  getEmails, updateEmailVerified,
 ] = [
     getAllUsersDb(db),
     persistUserDb(db), getUserDb(db),
     persistChallengeDb(db), getChallengeDb(db), deleteChallengeDb(db),
     persistCredentialDb(db),
     persistSessionDb(db), getSessionDb(db), deleteSessionDb(db),
-    getCredentialWithUserDb(db)
+    getCredentialWithUserDb(db),
+    createMagicTokenDb(db), getMagicTokenDetailsDb(db), updateMagicTokenDb(db),
+    getEmailsDb(db), updateEmailVerifiedDb(db)
   ]
