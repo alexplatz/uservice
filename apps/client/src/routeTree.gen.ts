@@ -14,7 +14,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardEmailsRouteImport } from './routes/dashboard/emails'
+import { Route as DashboardAccountRouteRouteImport } from './routes/dashboard/account/route'
+import { Route as DashboardAccountPasskeysRouteImport } from './routes/dashboard/account/passkeys'
+import { Route as DashboardAccountEmailsRouteImport } from './routes/dashboard/account/emails'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -41,10 +43,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardEmailsRoute = DashboardEmailsRouteImport.update({
+const DashboardAccountRouteRoute = DashboardAccountRouteRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardAccountPasskeysRoute =
+  DashboardAccountPasskeysRouteImport.update({
+    id: '/passkeys',
+    path: '/passkeys',
+    getParentRoute: () => DashboardAccountRouteRoute,
+  } as any)
+const DashboardAccountEmailsRoute = DashboardAccountEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
-  getParentRoute: () => DashboardRouteRoute,
+  getParentRoute: () => DashboardAccountRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -53,7 +66,9 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/dashboard/emails': typeof DashboardEmailsRoute
+  '/dashboard/account': typeof DashboardAccountRouteRouteWithChildren
+  '/dashboard/account/emails': typeof DashboardAccountEmailsRoute
+  '/dashboard/account/passkeys': typeof DashboardAccountPasskeysRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +76,9 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/dashboard/emails': typeof DashboardEmailsRoute
+  '/dashboard/account': typeof DashboardAccountRouteRouteWithChildren
+  '/dashboard/account/emails': typeof DashboardAccountEmailsRoute
+  '/dashboard/account/passkeys': typeof DashboardAccountPasskeysRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,7 +87,9 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/dashboard/emails': typeof DashboardEmailsRoute
+  '/dashboard/account': typeof DashboardAccountRouteRouteWithChildren
+  '/dashboard/account/emails': typeof DashboardAccountEmailsRoute
+  '/dashboard/account/passkeys': typeof DashboardAccountPasskeysRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,7 +99,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/register'
-    | '/dashboard/emails'
+    | '/dashboard/account'
+    | '/dashboard/account/emails'
+    | '/dashboard/account/passkeys'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -88,7 +109,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/register'
-    | '/dashboard/emails'
+    | '/dashboard/account'
+    | '/dashboard/account/emails'
+    | '/dashboard/account/passkeys'
   id:
     | '__root__'
     | '/'
@@ -96,7 +119,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/register'
-    | '/dashboard/emails'
+    | '/dashboard/account'
+    | '/dashboard/account/emails'
+    | '/dashboard/account/passkeys'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,22 +169,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/emails': {
-      id: '/dashboard/emails'
-      path: '/emails'
-      fullPath: '/dashboard/emails'
-      preLoaderRoute: typeof DashboardEmailsRouteImport
+    '/dashboard/account': {
+      id: '/dashboard/account'
+      path: '/account'
+      fullPath: '/dashboard/account'
+      preLoaderRoute: typeof DashboardAccountRouteRouteImport
       parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/account/passkeys': {
+      id: '/dashboard/account/passkeys'
+      path: '/passkeys'
+      fullPath: '/dashboard/account/passkeys'
+      preLoaderRoute: typeof DashboardAccountPasskeysRouteImport
+      parentRoute: typeof DashboardAccountRouteRoute
+    }
+    '/dashboard/account/emails': {
+      id: '/dashboard/account/emails'
+      path: '/emails'
+      fullPath: '/dashboard/account/emails'
+      preLoaderRoute: typeof DashboardAccountEmailsRouteImport
+      parentRoute: typeof DashboardAccountRouteRoute
     }
   }
 }
 
+interface DashboardAccountRouteRouteChildren {
+  DashboardAccountEmailsRoute: typeof DashboardAccountEmailsRoute
+  DashboardAccountPasskeysRoute: typeof DashboardAccountPasskeysRoute
+}
+
+const DashboardAccountRouteRouteChildren: DashboardAccountRouteRouteChildren = {
+  DashboardAccountEmailsRoute: DashboardAccountEmailsRoute,
+  DashboardAccountPasskeysRoute: DashboardAccountPasskeysRoute,
+}
+
+const DashboardAccountRouteRouteWithChildren =
+  DashboardAccountRouteRoute._addFileChildren(
+    DashboardAccountRouteRouteChildren,
+  )
+
 interface DashboardRouteRouteChildren {
-  DashboardEmailsRoute: typeof DashboardEmailsRoute
+  DashboardAccountRouteRoute: typeof DashboardAccountRouteRouteWithChildren
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardEmailsRoute: DashboardEmailsRoute,
+  DashboardAccountRouteRoute: DashboardAccountRouteRouteWithChildren,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

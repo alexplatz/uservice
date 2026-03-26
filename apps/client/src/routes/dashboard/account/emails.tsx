@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useUserStore } from "../../store/user"
+import { useUserStore } from "../../../store/user"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -8,10 +8,10 @@ import {
   ItemContent,
   ItemTitle,
 } from "@/components/ui/item"
-import { getEmails, verifyEmail } from "../../api/client";
+import { getEmails, verifyEmail } from "../../../api/client";
 import type { emailData } from "@/types";
 
-export const Route = createFileRoute('/dashboard/emails')({
+export const Route = createFileRoute('/dashboard/account/emails')({
   beforeLoad: async () => {
     const { id, emails } = useUserStore.getState()
 
