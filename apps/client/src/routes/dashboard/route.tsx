@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "../../store/auth";
+import { useAuthStore } from "@/store/auth";
 // import { useUserStore } from "../../store/user";
-import { isAuthed } from "../../utils/dashboard";
+import { isAuthed } from "@/utils/dashboard";
 // import { useCounterStore } from "@/store/count";
 
 export const Route = createFileRoute('/dashboard')({

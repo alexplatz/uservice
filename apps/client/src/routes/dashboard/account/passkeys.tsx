@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useUserStore } from "../../../store/user"
+import { useUserStore } from "@/store/user"
 
 import { Button } from "@/components/ui/button"
 import {

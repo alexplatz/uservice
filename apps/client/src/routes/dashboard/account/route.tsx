@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { useUserStore } from "../../../store/user";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarHeader, SidebarProvider, SidebarRail, SidebarTrigger } from "@/components/ui/sidebar";
+import { useUserStore } from "@/store/user";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarProvider, SidebarRail } from "@/components/ui/sidebar";
 import { KeyRound, Mail } from "lucide-react";
 
 export const Route = createFileRoute('/dashboard/account')({

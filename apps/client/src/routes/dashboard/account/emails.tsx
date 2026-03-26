@@ -1,15 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useUserStore } from "../../../store/user"
+import { useUserStore } from "@/store/user"
 
 import { Button } from "@/components/ui/button"
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemTitle,
-} from "@/components/ui/item"
-import { getEmails, verifyEmail } from "../../../api/client";
+import { getEmails, verifyEmail } from "@/api/client";
 import type { emailData } from "@/types";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SquarePenIcon, Trash2Icon, TrashIcon } from "lucide-react";
 
 export const Route = createFileRoute('/dashboard/account/emails')({
   beforeLoad: async () => {
@@ -29,41 +25,51 @@ export const Route = createFileRoute('/dashboard/account/emails')({
 
     return <>{
       emails?.length ?
-        <EmailsList
-          title="emails"
-          emails={emails}
-        /> :
+        <EmailsTable emails={emails} /> :
         <p>No emails... 🤔</p>
     }</>
   }
 })
 
-const EmailsList = ({ title, emails }: { title: string, emails: emailData[] }) =>
-  <div>
-    <h2>{title}</h2>
-    <ul>
-      {emails.map(({ id, email, isPrimary, verified }: emailData) =>
-        <EmailsListItem id={id} email={email} isPrimary={isPrimary} verified={verified} />
-      )}
-    </ul>
-  </div>
-
-const EmailsListItem = ({ id, email, isPrimary, verified }: emailData) =>
-  <li key={id}>
-    <Item>
-      <ItemContent>
-        <ItemTitle>{email}</ItemTitle>
-      </ItemContent>
-      <ItemContent>{
-        isPrimary ?
-          null :
-          <Button onClick={() => console.log('TODO')}>Make Primary</Button>
-      }</ItemContent>
-      {!verified ?
-        <ItemActions>
-          <Button onClick={async () => await verifyEmail(email)}>Verify</Button>
-        </ItemActions> :
-        <p>✅Verified</p>
-      }
-    </Item>
-  </li>
+const EmailsTable = ({ emails }: { emails: emailData[] }) =>
+  <>
+    <Table>
+      <TableCaption>Your emails</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Email</TableHead>
+          <TableHead>Verified</TableHead>
+          <TableHead>Primary</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {emails.map(({ id, email, isPrimary, verified }: emailData) => (
+          <TableRow key={id}>
+            <TableCell>{email}</TableCell>
+            <TableCell>{
+              !verified ?
+                <Button
+                  onClick={async () => await verifyEmail(email)}>
+                  Verify
+                </Button> :
+                <p>✅</p>
+            }</TableCell>
+            <TableCell>{
+              isPrimary ?
+                <p>✅</p> :
+                <Button
+                  onClick={() => console.log('TODO')}>
+                  Make Primary
+                </Button>
+            }</TableCell>
+            <TableCell className="flex justify-between w-[5rem]">
+              <SquarePenIcon onClick={() => console.log('edit')} />
+              <Trash2Icon onClick={() => console.log('delete')} />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+    <Button onClick={() => console.log('add')}>Add</Button>
+  </>
