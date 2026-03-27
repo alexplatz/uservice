@@ -1,4 +1,4 @@
-import { createMagicToken, deleteSession, getSession, persistSession } from "../../db/client"
+import { createMagicToken, deleteSession, getSession, persistSession } from "../../db/client/auth"
 
 const { randomBytes } = await import('node:crypto');
 

@@ -1,5 +1,5 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../../db/client"
+import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../../db/client/auth"
 import { server } from '@passwordless-id/webauthn'
 import { createAndSaveMagicToken, createJwts, refreshJwts } from "../utils"
 import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../../workers/src/client";

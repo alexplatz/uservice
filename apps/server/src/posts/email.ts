@@ -1,5 +1,5 @@
 import { t } from "elysia"
-import { createUserEmail, deleteUserEmail, getAllUserEmails, getUserEmail, updateUserEmail } from "../../../db/client"
+import { createUserEmail, deleteUserEmail, getAllUserEmails, getUserEmail, updateUserEmail } from "../../../db/client/email"
 
 
 export const getAllUserEmailsPost = async ({ body: { userId } }) =>

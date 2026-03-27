@@ -1,10 +1,9 @@
 import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite'
 import { eq } from 'drizzle-orm'
 import { Database } from 'bun:sqlite'
-import { users, challenges, credentials, sessions, emails, magicTokens } from './schema'
+import { users, challenges, credentials, sessions, emails, magicTokens } from '../schema'
 
-// in practice, this would be a secrets managed url.
-// also, client is executed by server while embedded
+// client is executed by server while embedded
 // so path needs to reflect where db is.
 // kinda gross tho
 const client = new Database(`${Bun.env.DB_URL!}`)
@@ -105,48 +104,6 @@ const updateEmailVerifiedDb = (db: BunSQLiteDatabase) => async (email) =>
     .returning()
     .get()
 
-const createUserEmailDb = (db: BunSQLiteDatabase) => async (userId: string, email: string) =>
-  await db
-    .insert(emails)
-    .values([{
-      email,
-      userId,
-    }])
-    .returning()
-    .get()
-
-const updateUserEmailDb = (db: BunSQLiteDatabase) => async (userId: string, emailId: string, email: string, isPrimary: boolean, verified: boolean) =>
-  await db
-    .insert(emails)
-    .values([{
-      id: emailId,
-      email,
-      isPrimary,
-      verified,
-      userId
-    }])
-    .onConflictDoUpdate({
-      target: emails.id,
-      set: {
-        email,
-        isPrimary,
-        verified
-      }
-    })
-    .returning()
-
-const getUserEmailDb = (db: BunSQLiteDatabase) => async (emailId) =>
-  await db
-    .select()
-    .from(emails)
-    .where(eq(emails.id, emailId))
-    .get()
-
-const deleteUserEmailDb = (db: BunSQLiteDatabase) => async (emailId: string) =>
-  await db
-    .delete(emails)
-    .where(eq(emails.id, emailId))
-
 
 /* composite queries */
 
@@ -158,17 +115,6 @@ const getCredentialWithUserDb = (db: BunSQLiteDatabase) => async (credentialId) 
     .where(eq(credentials.id, credentialId))
     .limit(1)
 
-const getAllUserEmailsDb = (db: BunSQLiteDatabase) => async (userId) =>
-  await db
-    .select({
-      id: emails.id,
-      email: emails.email,
-      isPrimary: emails.isPrimary,
-      verified: emails.verified
-    })
-    .from(emails)
-    .leftJoin(users, eq(users.id, emails.userId))
-    .where(eq(users.id, userId))
 
 const getMagicTokenDetailsDb = (db: BunSQLiteDatabase) => async (newTokenHash) =>
   await db.transaction(async (tx) => {
@@ -204,7 +150,6 @@ export const [
   getCredentialWithUser,
   createMagicToken, getMagicTokenDetails, updateMagicToken,
   updateEmailVerified,
-  getAllUserEmails, createUserEmail, deleteUserEmail, updateUserEmail, getUserEmail
 ] = [
     getAllUsersDb(db),
     persistUserDb(db), getUserDb(db),
@@ -214,5 +159,4 @@ export const [
     getCredentialWithUserDb(db),
     createMagicTokenDb(db), getMagicTokenDetailsDb(db), updateMagicTokenDb(db),
     updateEmailVerifiedDb(db),
-    getAllUserEmailsDb(db), createUserEmailDb(db), deleteUserEmailDb(db), updateUserEmailDb(db), getUserEmailDb(db)
   ]
