@@ -1,7 +1,8 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { jwt } from '@elysiajs/jwt'
-import { challenge, challengeShape, getUserEmails, getUserEmailsShape, login, loginShape, magicLinkEmail, magicLinkEmailShape, refresh, refreshShape, register, registerShape, verifyEmail, verifyEmailShape, verifyMagicLink, verifyMagicLinkShape } from './posts'
+import { challenge, challengeShape, login, loginShape, magicLinkEmail, magicLinkEmailShape, refresh, refreshShape, register, registerShape, verifyEmail, verifyEmailShape, verifyMagicLink, verifyMagicLinkShape } from './posts/auth'
+import { createUserEmailPost, createUserEmailShape, deleteUserEmailPost, deleteUserEmailShape, getAllUserEmailsPost, getAllUserEmailsShape, updateUserEmailPost, updateUserEmailShape } from './posts/email'
 
 // import { logger } from '@bogeychan/elysia-logger'
 
@@ -33,13 +34,20 @@ const app = new Elysia()
   .post('/user/challenge', challenge, challengeShape)
   .post('/user/register', register, registerShape)
   .post('/user/login', login, loginShape)
+  .post('/refresh', refresh, refreshShape)
 
   .post('/user/login/magic-link', magicLinkEmail, magicLinkEmailShape)
   .post('/user/email/verify', verifyEmail, verifyEmailShape)
   .post('/user/verify', verifyMagicLink, verifyMagicLinkShape)
 
-  .post('/refresh', refresh, refreshShape)
-  .post('/user/emails', getUserEmails, getUserEmailsShape)
+  // do jwt verification here, all routes after are protected
+  // .guard()
+
+  .post('/user/email/get/all', getAllUserEmailsPost, getAllUserEmailsShape)
+  .post('/user/email/create', createUserEmailPost, createUserEmailShape)
+  .post('/user/email/update', updateUserEmailPost, updateUserEmailShape)
+  .post('/user/email/delete', deleteUserEmailPost, deleteUserEmailShape)
+
 
   .listen(Bun.env.SERVER_PORT! || 8001)
 

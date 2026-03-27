@@ -1,8 +1,8 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, getEmails, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../db/client"
+import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../../db/client"
 import { server } from '@passwordless-id/webauthn'
-import { createAndSaveMagicToken, createJwts, refreshJwts } from "./utils"
-import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../workers/src/client";
+import { createAndSaveMagicToken, createJwts, refreshJwts } from "../utils"
+import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../../workers/src/client";
 
 export const challenge = async ({ body: { challengeId } }) => {
   const challenge = server.randomChallenge()
@@ -150,16 +150,6 @@ export const magicLinkEmail = async ({ body: { email } }) => {
 export const magicLinkEmailShape = {
   body: t.Object({
     email: t.String()
-  })
-}
-
-export const getUserEmails = async ({ body: { userId } }) =>
-  // check jwt first
-  await getEmails(userId)
-
-export const getUserEmailsShape = {
-  body: t.Object({
-    userId: t.String()
   })
 }
 

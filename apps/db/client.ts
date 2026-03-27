@@ -105,6 +105,48 @@ const updateEmailVerifiedDb = (db: BunSQLiteDatabase) => async (email) =>
     .returning()
     .get()
 
+const createUserEmailDb = (db: BunSQLiteDatabase) => async (userId: string, email: string) =>
+  await db
+    .insert(emails)
+    .values([{
+      email,
+      userId,
+    }])
+    .returning()
+    .get()
+
+const updateUserEmailDb = (db: BunSQLiteDatabase) => async (userId: string, emailId: string, email: string, isPrimary: boolean, verified: boolean) =>
+  await db
+    .insert(emails)
+    .values([{
+      id: emailId,
+      email,
+      isPrimary,
+      verified,
+      userId
+    }])
+    .onConflictDoUpdate({
+      target: emails.id,
+      set: {
+        email,
+        isPrimary,
+        verified
+      }
+    })
+    .returning()
+
+const getUserEmailDb = (db: BunSQLiteDatabase) => async (emailId) =>
+  await db
+    .select()
+    .from(emails)
+    .where(eq(emails.id, emailId))
+    .get()
+
+const deleteUserEmailDb = (db: BunSQLiteDatabase) => async (emailId: string) =>
+  await db
+    .delete(emails)
+    .where(eq(emails.id, emailId))
+
 
 /* composite queries */
 
@@ -116,7 +158,7 @@ const getCredentialWithUserDb = (db: BunSQLiteDatabase) => async (credentialId) 
     .where(eq(credentials.id, credentialId))
     .limit(1)
 
-const getEmailsDb = (db: BunSQLiteDatabase) => async (userId) =>
+const getAllUserEmailsDb = (db: BunSQLiteDatabase) => async (userId) =>
   await db
     .select({
       id: emails.id,
@@ -161,7 +203,8 @@ export const [
   persistSession, getSession, deleteSession,
   getCredentialWithUser,
   createMagicToken, getMagicTokenDetails, updateMagicToken,
-  getEmails, updateEmailVerified,
+  updateEmailVerified,
+  getAllUserEmails, createUserEmail, deleteUserEmail, updateUserEmail, getUserEmail
 ] = [
     getAllUsersDb(db),
     persistUserDb(db), getUserDb(db),
@@ -170,5 +213,6 @@ export const [
     persistSessionDb(db), getSessionDb(db), deleteSessionDb(db),
     getCredentialWithUserDb(db),
     createMagicTokenDb(db), getMagicTokenDetailsDb(db), updateMagicTokenDb(db),
-    getEmailsDb(db), updateEmailVerifiedDb(db)
+    updateEmailVerifiedDb(db),
+    getAllUserEmailsDb(db), createUserEmailDb(db), deleteUserEmailDb(db), updateUserEmailDb(db), getUserEmailDb(db)
   ]

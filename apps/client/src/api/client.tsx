@@ -52,7 +52,7 @@ const loginServer = (server, passkeyClient) => async () => {
 }
 
 const getEmailsServer = (server) => async (userId) =>
-  await server.user.emails.post({ userId })
+  await server.user.email.get.all.post({ userId })
 
 const verifyEmailServer = (server) => async (email) =>
   await server.user.email.verify.post({ email })
