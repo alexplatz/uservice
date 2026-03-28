@@ -1,7 +1,7 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../../db/client/auth"
+import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, persistChallenge, persistUser, updateEmailVerified } from "../../../db/client/auth"
 import { server } from '@passwordless-id/webauthn'
-import { createAndSaveMagicToken, createCredential, createJwts, refreshJwts } from "../utils"
+import { createAndSaveMagicToken, createCredential, createJwts } from "../utils"
 import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../../workers/src/client";
 
 export const challenge = async ({ body: { challengeId } }) => {
@@ -53,21 +53,6 @@ export const registerShape = {
   })
 }
 
-export const refreshPost = async ({ status, refresh, access, cookie: { auth }, body: { jwt } }) =>
-  refreshJwts({ status, refresh, access, auth, jwt })
-
-
-export const refreshPostShape = {
-  status: t.Number(),
-  refresh: t.String(),
-  access: t.String(),
-  cookie: t.Object({
-    auth: t.String(),
-  }),
-  body: t.Object({
-    jwt: t.String(),
-  }),
-}
 
 export const login = async ({ refresh, access, cookie, body: { challengeId, authentication } }) => {
 

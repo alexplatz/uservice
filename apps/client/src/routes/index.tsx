@@ -46,7 +46,6 @@ export const Route = createFileRoute('/')({
           jwt: string,
           email: undefined | emailData
         } = data
-        console.log(data)
 
         useAuthStore.setState({ jwt })
         useUserStore.setState({

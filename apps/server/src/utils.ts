@@ -8,18 +8,18 @@ const { randomBytes } = await import('node:crypto');
 
 const jwtData = async ({ refresh, access, auth, bearer }) => ({
   refreshPayload: await refresh.verify(auth.value),
-  user: await access.verify(bearer)?.user,
+  user: (await access.verify(bearer))?.user,
   session: await getUserSession(auth.value)
 })
 
 const verifyJwtData = async ({ status, refreshPayload, user, session }) => {
   if (!refreshPayload) {
-    return status(401, 'no refreshToken')
+    return status(401, 'no refresh token')
   } else if (!user) {
-    return status(401, 'no jwt')
+    return status(401, 'no access token')
   } else if (!session) {
     await deleteUserSession(refreshPayload.familyId)
-    return status(401, 'stale refreshToken')
+    return status(401, 'stale refresh token')
   }
 }
 
@@ -40,7 +40,8 @@ export const refreshJwts = async ({ status, refresh, access, auth, bearer }) => 
     session
   } = await jwtData({ refresh, access, auth, bearer })
 
-  await verifyJwtData({ status, refreshPayload, user, session })
+  const errors = await verifyJwtData({ status, refreshPayload, user, session })
+  if (errors) { return errors }
 
   const newRefresh = await refresh.sign({
     userId: user.id,

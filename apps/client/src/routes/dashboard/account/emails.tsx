@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { getEmails, verifyEmail } from "@/api/client";
 import type { emailData } from "@/types";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { SquarePenIcon, Trash2Icon, TrashIcon } from "lucide-react";
+import { SquarePenIcon, Trash2Icon } from "lucide-react";
 
 export const Route = createFileRoute('/dashboard/account/emails')({
   beforeLoad: async () => {

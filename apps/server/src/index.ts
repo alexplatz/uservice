@@ -2,10 +2,11 @@ import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { jwt } from '@elysiajs/jwt'
 import { bearer } from '@elysiajs/bearer'
-import { challenge, challengeShape, login, loginShape, magicLinkEmail, magicLinkEmailShape, refresh, refreshPost, refreshPostShape, refreshShape, register, registerShape, verifyEmail, verifyEmailShape, verifyMagicLink, verifyMagicLinkShape } from './posts/auth'
+import { challenge, challengeShape, login, loginShape, magicLinkEmail, magicLinkEmailShape, register, registerShape, verifyEmail, verifyEmailShape, verifyMagicLink, verifyMagicLinkShape } from './posts/auth'
 import { createUserEmailPost, createUserEmailShape, deleteUserEmailPost, deleteUserEmailShape, getAllUserEmailsPost, getAllUserEmailsShape, updateUserEmailPost, updateUserEmailShape } from './posts/email'
 import { createUserCredentialPost, createUserCredentialShape, deleteUserCredentialPost, deleteUserCredentialShape, getAllUserCredentialsPost, getAllUserCredentialsShape, updateUserCredentialPost, updateUserCredentialShape } from './posts/credential'
 import { deleteUserSessionPost, deleteUserSessionShape, getAllUserSessionsPost, getAllUserSessionsShape } from './posts/session'
+import { refreshGet, refreshGetShape } from './gets'
 import { guardJwts } from './guards'
 
 // import { logger } from '@bogeychan/elysia-logger'
@@ -39,7 +40,7 @@ const app = new Elysia()
   .post('/user/challenge', challenge, challengeShape)
   .post('/user/register', register, registerShape)
   .post('/user/login', login, loginShape)
-  .post('/refresh', refreshPost, refreshPostShape)
+  .get('/refresh', refreshGet, refreshGetShape)
 
   .post('/user/login/magic-link', magicLinkEmail, magicLinkEmailShape)
   .post('/user/email/verify', verifyEmail, verifyEmailShape)

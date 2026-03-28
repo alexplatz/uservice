@@ -1,10 +1,17 @@
-import { edenTreaty } from "@elysiajs/eden"
+import { treaty } from "@elysiajs/eden"
 import type { App } from "../../../server/src"
 import { client } from "@passwordless-id/webauthn"
+import { useAuthStore } from "@/store/auth"
 
-
-const server = edenTreaty<App>(import.meta.env.VITE_SERVER_URL!, {
-  $fetch: { credentials: 'include' }
+const server = treaty<App>(import.meta.env.VITE_SERVER_URL!, {
+  onRequest: () => ({
+    headers: {
+      authorization: `Bearer ${useAuthStore.getState().jwt}`,
+    }
+  }),
+  fetch: {
+    credentials: 'include'
+  }
 })
 
 
@@ -29,8 +36,8 @@ const registerServer = (server, passkeyClient) => async (user: { username: strin
   }
 }
 
-const refreshServer = (server) => async (jwt) => {
-  return await server.refresh.post({ jwt })
+const refreshServer = (server) => async () => {
+  return await server.refresh.get()
 }
 
 const loginServer = (server, passkeyClient) => async () => {
@@ -51,8 +58,9 @@ const loginServer = (server, passkeyClient) => async () => {
   }
 }
 
-const getEmailsServer = (server) => async (userId) =>
-  await server.user.email.get.all.post({ userId })
+const getEmailsServer = (server) => async (userId) => {
+  return await server.user.email.get.all.post({ userId })
+}
 
 const verifyEmailServer = (server) => async (email) =>
   await server.user.email.verify.post({ email })
