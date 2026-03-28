@@ -6,6 +6,7 @@ import { challenge, challengeShape, login, loginShape, magicLinkEmail, magicLink
 import { createUserEmailPost, createUserEmailShape, deleteUserEmailPost, deleteUserEmailShape, getAllUserEmailsPost, getAllUserEmailsShape, updateUserEmailPost, updateUserEmailShape } from './posts/email'
 import { createUserCredentialPost, createUserCredentialShape, deleteUserCredentialPost, deleteUserCredentialShape, getAllUserCredentialsPost, getAllUserCredentialsShape, updateUserCredentialPost, updateUserCredentialShape } from './posts/credential'
 import { deleteUserSessionPost, deleteUserSessionShape, getAllUserSessionsPost, getAllUserSessionsShape } from './posts/session'
+import { guardJwts } from './guards'
 
 // import { logger } from '@bogeychan/elysia-logger'
 
@@ -44,7 +45,10 @@ const app = new Elysia()
   .post('/user/email/verify', verifyEmail, verifyEmailShape)
   .post('/user/verify', verifyMagicLink, verifyMagicLinkShape)
 
-  // do jwt verification here, all routes after are protected
+  .guard({
+    beforeHandle: ({ status, refresh, access, cookie: { auth }, bearer }) =>
+      guardJwts({ status, refresh, access, cookie: { auth }, bearer })
+  })
 
   .post('/user/email/get/all', getAllUserEmailsPost, getAllUserEmailsShape)
   .post('/user/email/create', createUserEmailPost, createUserEmailShape)
