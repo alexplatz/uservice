@@ -1,7 +1,7 @@
 import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite'
 import { eq } from 'drizzle-orm'
 import { Database } from 'bun:sqlite'
-import { users, challenges, credentials, sessions, emails, magicTokens } from '../schema'
+import { users, challenges, credentials, emails, magicTokens } from '../schema'
 
 // client is executed by server while embedded
 // so path needs to reflect where db is.
@@ -48,23 +48,6 @@ const deleteChallengeDb = (db: BunSQLiteDatabase) => async (challengeId) =>
 
 const persistCredentialDb = (db: BunSQLiteDatabase) => async (credential) =>
   await db.insert(credentials).values([credential]).returning()
-
-const persistSessionDb = (db: BunSQLiteDatabase) => async (userId, familyId, refreshToken) =>
-  await db
-    .insert(sessions)
-    .values([{ userId, familyId, refreshToken }])
-    .onConflictDoUpdate({
-      target: sessions.familyId,
-      set: { refreshToken }
-    })
-    .returning()
-
-const getSessionDb = (db: BunSQLiteDatabase) => async (refreshToken) =>
-  await db.select().from(sessions).where(eq(sessions.refreshToken, refreshToken)).limit(1)
-
-const deleteSessionDb = (db: BunSQLiteDatabase) => async (familyId) =>
-  await db.delete(sessions).where(eq(sessions.familyId, familyId))
-
 
 const createMagicTokenDb = (db: BunSQLiteDatabase) => async (email, tokenHash, createdAt, expiresAt) =>
   await db.transaction(async (tx) => {
@@ -146,7 +129,6 @@ export const [
   persistUser, getUser,
   persistChallenge, getChallenge, deleteChallenge,
   persistCredential,
-  persistSession, getSession, deleteSession,
   getCredentialWithUser,
   createMagicToken, getMagicTokenDetails, updateMagicToken,
   updateEmailVerified,
@@ -155,7 +137,6 @@ export const [
     persistUserDb(db), getUserDb(db),
     persistChallengeDb(db), getChallengeDb(db), deleteChallengeDb(db),
     persistCredentialDb(db),
-    persistSessionDb(db), getSessionDb(db), deleteSessionDb(db),
     getCredentialWithUserDb(db),
     createMagicTokenDb(db), getMagicTokenDetailsDb(db), updateMagicTokenDb(db),
     updateEmailVerifiedDb(db),

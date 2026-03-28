@@ -1,7 +1,7 @@
 import { t, status } from "elysia"
 import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, persistChallenge, persistCredential, persistUser, updateEmailVerified } from "../../../db/client/auth"
 import { server } from '@passwordless-id/webauthn'
-import { createAndSaveMagicToken, createJwts, refreshJwts } from "../utils"
+import { createAndSaveMagicToken, createCredential, createJwts, refreshJwts } from "../utils"
 import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../../workers/src/client";
 
 export const challenge = async ({ body: { challengeId } }) => {
@@ -20,21 +20,9 @@ export const challengeShape = {
 }
 
 export const register = async ({ refresh, access, cookie, body: { challengeId, email, username, registration } }) => {
-  const [{ challenge }] = await getChallenge(challengeId)
-
-  if (challenge === null) { return status(400, "No passkey registration challenge found") }
-
-  const expected = {
-    challenge,
-    origin: `${Bun.env.CLIENT_URL!}`
-  }
-
-  const { credential: { id, publicKey, algorithm, transports } } = await server.verifyRegistration(registration, expected)
-
-  await deleteChallenge(challengeId)
   const [{ users: user }] = await persistUser(email, username)
 
-  await persistCredential({ id, publicKey, algorithm, transports, userId: user.id })
+  createCredential({ userId: user.id, challengeId, registration })
 
   return createJwts(refresh, access, cookie['auth'], user)
 }
@@ -65,11 +53,11 @@ export const registerShape = {
   })
 }
 
-export const refresh = async ({ status, refresh, access, cookie: { auth }, body: { jwt } }) =>
-  refreshJwts(status, refresh, access, auth, jwt)
+export const refreshPost = async ({ status, refresh, access, cookie: { auth }, body: { jwt } }) =>
+  refreshJwts({ status, refresh, access, auth, jwt })
 
 
-export const refreshShape = {
+export const refreshPostShape = {
   status: t.Number(),
   refresh: t.String(),
   access: t.String(),

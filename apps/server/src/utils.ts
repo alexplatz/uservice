@@ -1,33 +1,53 @@
-import { createMagicToken, deleteSession, getSession, persistSession } from "../../db/client/auth"
+import { createMagicToken, deleteChallenge, getChallenge } from "../../db/client/auth"
+import { createUserCredential } from "../../db/client/credential";
+import { deleteUserSession, getUserSession, createUserSession } from "../../db/client/session"
+import { server, type RegistrationInfo } from '@passwordless-id/webauthn'
+import { status } from 'elysia'
 
 const { randomBytes } = await import('node:crypto');
 
-export const refreshJwts = async (status, refresh, access, auth, jwt) => {
-  const refreshPayload = await refresh.verify(auth.value)
+const jwtData = async ({ refresh, access, auth, bearer }) => ({
+  refreshPayload: await refresh.verify(auth.value),
+  user: await access.verify(bearer)?.user,
+  session: await getUserSession(auth.value)
+})
 
+const verifyJwtData = async ({ status, refreshPayload, user, session }) => {
   if (!refreshPayload) {
     return status(401, 'no refreshToken')
-  }
-
-  const { user } = await access.verify(jwt)
-
-  if (!user) {
+  } else if (!user) {
     return status(401, 'no jwt')
-  }
-
-  const [session] = await getSession(auth.value)
-
-  if (!session) {
-    await deleteSession(refreshPayload.familyId)
+  } else if (!session) {
+    await deleteUserSession(refreshPayload.familyId)
     return status(401, 'stale refreshToken')
   }
+}
+
+export const checkJwts = async ({ status, refresh, access, auth, bearer }) => {
+  const {
+    refreshPayload,
+    user,
+    session
+  } = await jwtData({ refresh, access, auth, bearer })
+
+  return await verifyJwtData({ status, refreshPayload, user, session })
+}
+
+export const refreshJwts = async ({ status, refresh, access, auth, bearer }) => {
+  const {
+    refreshPayload,
+    user,
+    session
+  } = await jwtData({ refresh, access, auth, bearer })
+
+  await verifyJwtData({ status, refreshPayload, user, session })
 
   const newRefresh = await refresh.sign({
     userId: user.id,
     familyId: refreshPayload.familyId
   })
 
-  const [{ familyId }] = await persistSession(
+  const [{ familyId }] = await createUserSession(
     user.id,
     refreshPayload.familyId,
     newRefresh
@@ -47,7 +67,7 @@ export const refreshJwts = async (status, refresh, access, auth, jwt) => {
 export const createJwts = async (refresh, access, auth, user) => {
   const newFamilyId = Bun.randomUUIDv7()
   const newRefresh = await refresh.sign({ userId: user.id, familyId: newFamilyId })
-  const [{ familyId }] = await persistSession(user.id, newFamilyId, newRefresh)
+  const [{ familyId }] = await createUserSession(user.id, newFamilyId, newRefresh)
 
   const newAccess = await access.sign({ user, familyId })
 
@@ -88,4 +108,21 @@ export const createAndSaveMagicToken = async (email: string) => {
   await createMagicToken(email, tokenHash, createdAt, expiresAt)
 
   return { to: email, url }
+}
+
+export const createCredential = async ({ userId, challengeId }: { userId: string, challengeId: string, registration: RegistrationInfo }) => {
+  const [{ challenge }] = await getChallenge(challengeId)
+
+  if (challenge === null) { return status(400, "No passkey registration challenge found") }
+
+  const expected = {
+    challenge,
+    origin: `${Bun.env.CLIENT_URL!}`
+  }
+
+  const { credential: { id, publicKey, algorithm, transports } } = await server.verifyRegistration(registration, expected)
+
+  await deleteChallenge(challengeId)
+
+  return await createUserCredential(id, userId, publicKey, algorithm, transports)
 }

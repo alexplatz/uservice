@@ -1,8 +1,11 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { jwt } from '@elysiajs/jwt'
-import { challenge, challengeShape, login, loginShape, magicLinkEmail, magicLinkEmailShape, refresh, refreshShape, register, registerShape, verifyEmail, verifyEmailShape, verifyMagicLink, verifyMagicLinkShape } from './posts/auth'
+import { bearer } from '@elysiajs/bearer'
+import { challenge, challengeShape, login, loginShape, magicLinkEmail, magicLinkEmailShape, refresh, refreshPost, refreshPostShape, refreshShape, register, registerShape, verifyEmail, verifyEmailShape, verifyMagicLink, verifyMagicLinkShape } from './posts/auth'
 import { createUserEmailPost, createUserEmailShape, deleteUserEmailPost, deleteUserEmailShape, getAllUserEmailsPost, getAllUserEmailsShape, updateUserEmailPost, updateUserEmailShape } from './posts/email'
+import { createUserCredentialPost, createUserCredentialShape, deleteUserCredentialPost, deleteUserCredentialShape, getAllUserCredentialsPost, getAllUserCredentialsShape, updateUserCredentialPost, updateUserCredentialShape } from './posts/credential'
+import { deleteUserSessionPost, deleteUserSessionShape, getAllUserSessionsPost, getAllUserSessionsShape } from './posts/session'
 
 // import { logger } from '@bogeychan/elysia-logger'
 
@@ -14,6 +17,7 @@ const app = new Elysia()
     origin: [`${Bun.env.CLIENT_URL!}`],
     credentials: true
   }))
+  .use(bearer())
   .use(
     jwt({
       name: 'access',
@@ -34,20 +38,26 @@ const app = new Elysia()
   .post('/user/challenge', challenge, challengeShape)
   .post('/user/register', register, registerShape)
   .post('/user/login', login, loginShape)
-  .post('/refresh', refresh, refreshShape)
+  .post('/refresh', refreshPost, refreshPostShape)
 
   .post('/user/login/magic-link', magicLinkEmail, magicLinkEmailShape)
   .post('/user/email/verify', verifyEmail, verifyEmailShape)
   .post('/user/verify', verifyMagicLink, verifyMagicLinkShape)
 
   // do jwt verification here, all routes after are protected
-  // .guard()
 
   .post('/user/email/get/all', getAllUserEmailsPost, getAllUserEmailsShape)
   .post('/user/email/create', createUserEmailPost, createUserEmailShape)
   .post('/user/email/update', updateUserEmailPost, updateUserEmailShape)
   .post('/user/email/delete', deleteUserEmailPost, deleteUserEmailShape)
 
+  .post('/user/credential/get/all', getAllUserCredentialsPost, getAllUserCredentialsShape)
+  .post('/user/credential/create', createUserCredentialPost, createUserCredentialShape)
+  .post('/user/credential/update', updateUserCredentialPost, updateUserCredentialShape)
+  .post('/user/credential/delete', deleteUserCredentialPost, deleteUserCredentialShape)
+
+  .post('/user/session/get/all', getAllUserSessionsPost, getAllUserSessionsShape)
+  .post('/user/session/delete', deleteUserSessionPost, deleteUserSessionShape)
 
   .listen(Bun.env.SERVER_PORT! || 8001)
 
