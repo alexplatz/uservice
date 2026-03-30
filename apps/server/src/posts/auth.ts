@@ -94,7 +94,7 @@ export const loginShape = {
         authenticatorData: t.String(),
         clientDataJSON: t.String(),
         signature: t.String(),
-        userHandle: t.String()
+        userHandle: t.Optional(t.String())
       }),
       type: t.String(),
       rawId: t.String(),

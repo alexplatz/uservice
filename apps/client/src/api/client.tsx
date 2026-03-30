@@ -1,7 +1,10 @@
 import { treaty } from "@elysiajs/eden"
 import type { App } from "../../../server/src"
-import { client } from "@passwordless-id/webauthn"
+import { client, type AuthenticationResponseJSON } from "@passwordless-id/webauthn"
 import { useAuthStore } from "@/store/auth"
+
+type Server = ReturnType<typeof treaty<App>>
+type PasskeyClient = typeof client
 
 const server = treaty<App>(import.meta.env.VITE_SERVER_URL!, {
   onRequest: () => ({
@@ -15,7 +18,7 @@ const server = treaty<App>(import.meta.env.VITE_SERVER_URL!, {
 })
 
 
-const registerServer = (server, passkeyClient) => async (user: { username: string, email: string }) => {
+const registerServer = (server: Server, passkeyClient: PasskeyClient) => async (user: { username: string, email: string }) => {
   const challengeId = crypto.randomUUID()
   const { data, error } = await server.user.challenge.post({ challengeId })
 
@@ -36,18 +39,18 @@ const registerServer = (server, passkeyClient) => async (user: { username: strin
   }
 }
 
-const refreshServer = (server) => async () => {
+const refreshServer = (server: Server) => async () => {
   return await server.refresh.get()
 }
 
-const loginServer = (server, passkeyClient) => async () => {
+const loginServer = (server: Server, passkeyClient: PasskeyClient) => async () => {
   const challengeId = crypto.randomUUID()
   const { data, error } = await server.user.challenge.post({ challengeId })
 
   if (error) {
     return { data, error }
   } else {
-    const authentication = await passkeyClient.authenticate({
+    const authentication: AuthenticationResponseJSON = await passkeyClient.authenticate({
       challenge: data,
     })
 
@@ -58,17 +61,17 @@ const loginServer = (server, passkeyClient) => async () => {
   }
 }
 
-const getEmailsServer = (server) => async (userId) => {
+const getEmailsServer = (server: Server) => async (userId: string) => {
   return await server.user.email.get.all.post({ userId })
 }
 
-const verifyEmailServer = (server) => async (email) =>
+const verifyEmailServer = (server: Server) => async (email: string) =>
   await server.user.email.verify.post({ email })
 
-const createMagicLinkServer = (server) => async (email: string) =>
+const createMagicLinkServer = (server: Server) => async (email: string) =>
   await server.user.login["magic-link"].post({ email })
 
-const magicLinkLoginServer = (server) => async (token: string) =>
+const magicLinkLoginServer = (server: Server) => async (token: string) =>
   await server.user.verify.post({ token })
 
 export const [
