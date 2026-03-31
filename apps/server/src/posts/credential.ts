@@ -12,7 +12,6 @@ export const getAllUserCredentialsShape = {
   })
 }
 
-// check this
 export const createUserCredentialPost = async ({ body: { userId, challengeId, registration } }) =>
   createCredential({ userId, challengeId, registration })
 

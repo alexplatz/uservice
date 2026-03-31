@@ -1,18 +1,18 @@
 import { createMagicToken, deleteChallenge, getChallenge } from "../../db/client/auth"
 import { createUserCredential } from "../../db/client/credential";
 import { deleteUserSession, getUserSession, createUserSession } from "../../db/client/session"
-import { server, type RegistrationInfo } from '@passwordless-id/webauthn'
+import { server, type RegistrationInfo, type RegistrationJSON } from '@passwordless-id/webauthn'
 import { status } from 'elysia'
 
 const { randomBytes } = await import('node:crypto');
 
-const jwtData = async ({ refresh, access, auth, bearer }) => ({
+export const jwtData = async ({ refresh, access, auth, bearer }) => ({
   refreshPayload: await refresh.verify(auth.value),
   user: (await access.verify(bearer))?.user,
   session: await getUserSession(auth.value)
 })
 
-const verifyJwtData = async ({ status, refreshPayload, user, session }) => {
+export const verifyJwtData = async ({ status, refreshPayload, user, session }) => {
   if (!refreshPayload) {
     return status(401, 'no refresh token')
   } else if (!user) {
@@ -111,7 +111,7 @@ export const createAndSaveMagicToken = async (email: string) => {
   return { to: email, url }
 }
 
-export const createCredential = async ({ userId, challengeId }: { userId: string, challengeId: string, registration: RegistrationInfo }) => {
+export const createCredential = async ({ userId, challengeId, registration }: { userId: string, challengeId: string, registration: RegistrationJSON }) => {
   const [{ challenge }] = await getChallenge(challengeId)
 
   if (challenge === null) { return status(400, "No passkey registration challenge found") }

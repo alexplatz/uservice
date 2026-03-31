@@ -15,6 +15,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardAccountRouteRouteImport } from './routes/dashboard/account/route'
+import { Route as DashboardAccountSessionsRouteImport } from './routes/dashboard/account/sessions'
 import { Route as DashboardAccountPasskeysRouteImport } from './routes/dashboard/account/passkeys'
 import { Route as DashboardAccountEmailsRouteImport } from './routes/dashboard/account/emails'
 
@@ -48,6 +49,12 @@ const DashboardAccountRouteRoute = DashboardAccountRouteRouteImport.update({
   path: '/account',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardAccountSessionsRoute =
+  DashboardAccountSessionsRouteImport.update({
+    id: '/sessions',
+    path: '/sessions',
+    getParentRoute: () => DashboardAccountRouteRoute,
+  } as any)
 const DashboardAccountPasskeysRoute =
   DashboardAccountPasskeysRouteImport.update({
     id: '/passkeys',
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/account': typeof DashboardAccountRouteRouteWithChildren
   '/dashboard/account/emails': typeof DashboardAccountEmailsRoute
   '/dashboard/account/passkeys': typeof DashboardAccountPasskeysRoute
+  '/dashboard/account/sessions': typeof DashboardAccountSessionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -79,6 +87,7 @@ export interface FileRoutesByTo {
   '/dashboard/account': typeof DashboardAccountRouteRouteWithChildren
   '/dashboard/account/emails': typeof DashboardAccountEmailsRoute
   '/dashboard/account/passkeys': typeof DashboardAccountPasskeysRoute
+  '/dashboard/account/sessions': typeof DashboardAccountSessionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -90,6 +99,7 @@ export interface FileRoutesById {
   '/dashboard/account': typeof DashboardAccountRouteRouteWithChildren
   '/dashboard/account/emails': typeof DashboardAccountEmailsRoute
   '/dashboard/account/passkeys': typeof DashboardAccountPasskeysRoute
+  '/dashboard/account/sessions': typeof DashboardAccountSessionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
     | '/dashboard/account'
     | '/dashboard/account/emails'
     | '/dashboard/account/passkeys'
+    | '/dashboard/account/sessions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '/dashboard/account'
     | '/dashboard/account/emails'
     | '/dashboard/account/passkeys'
+    | '/dashboard/account/sessions'
   id:
     | '__root__'
     | '/'
@@ -122,6 +134,7 @@ export interface FileRouteTypes {
     | '/dashboard/account'
     | '/dashboard/account/emails'
     | '/dashboard/account/passkeys'
+    | '/dashboard/account/sessions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAccountRouteRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/account/sessions': {
+      id: '/dashboard/account/sessions'
+      path: '/sessions'
+      fullPath: '/dashboard/account/sessions'
+      preLoaderRoute: typeof DashboardAccountSessionsRouteImport
+      parentRoute: typeof DashboardAccountRouteRoute
+    }
     '/dashboard/account/passkeys': {
       id: '/dashboard/account/passkeys'
       path: '/passkeys'
@@ -196,11 +216,13 @@ declare module '@tanstack/react-router' {
 interface DashboardAccountRouteRouteChildren {
   DashboardAccountEmailsRoute: typeof DashboardAccountEmailsRoute
   DashboardAccountPasskeysRoute: typeof DashboardAccountPasskeysRoute
+  DashboardAccountSessionsRoute: typeof DashboardAccountSessionsRoute
 }
 
 const DashboardAccountRouteRouteChildren: DashboardAccountRouteRouteChildren = {
   DashboardAccountEmailsRoute: DashboardAccountEmailsRoute,
   DashboardAccountPasskeysRoute: DashboardAccountPasskeysRoute,
+  DashboardAccountSessionsRoute: DashboardAccountSessionsRoute,
 }
 
 const DashboardAccountRouteRouteWithChildren =

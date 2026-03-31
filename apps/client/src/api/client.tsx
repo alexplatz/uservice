@@ -61,10 +61,6 @@ const loginServer = (server: Server, passkeyClient: PasskeyClient) => async () =
   }
 }
 
-const getEmailsServer = (server: Server) => async (userId: string) => {
-  return await server.user.email.get.all.post({ userId })
-}
-
 const verifyEmailServer = (server: Server) => async (email: string) =>
   await server.user.email.verify.post({ email })
 
@@ -74,12 +70,61 @@ const createMagicLinkServer = (server: Server) => async (email: string) =>
 const magicLinkLoginServer = (server: Server) => async (token: string) =>
   await server.user.verify.post({ token })
 
+const logoutServer = (server: Server) => async () =>
+  await server.user.logout.get()
+
+const getEmailsServer = (server: Server) => async (userId: string) =>
+  await server.user.email.get.all.post({ userId })
+
+const createEmailServer = (server: Server) => async (userId: string, email: string) =>
+  await server.user.email.create.post({ userId, email })
+
+const deleteEmailServer = (server: Server) => async (emailId: string) =>
+  await server.user.email.delete.post({ emailId })
+
+const getCredentialsServer = (server: Server) => async (userId: string) =>
+  await server.user.credential.get.all.post({ userId })
+
+const createCredentialsServer = (server: Server, passkeyClient: PasskeyClient) => async ({ userId, username, email }) => {
+  const challengeId = crypto.randomUUID()
+
+  const { data, error } = await server.user.challenge.post({ challengeId })
+
+  if (error) {
+    return { data, error }
+  } else {
+    const registration = await passkeyClient.register({
+      challenge: data,
+      user: { displayName: username, name: email }
+    })
+
+    return await server.user.credential.create.post({ userId, challengeId, registration })
+  }
+}
+
+const deleteCredentialServer = (server: Server) => async (passkeyId: string) =>
+  await server.user.credential.delete.post({ credentialId: passkeyId })
+
+const getSessionsServer = (server: Server) => async (userId: string) =>
+  await server.user.session.get.all.post({ userId })
+
+const deleteSessionServer = (server: Server) => async (familyId: string) =>
+  await server.user.session.delete.post({ familyId })
+
 export const [
   register, login, refresh,
-  getEmails, verifyEmail,
-  createMagicLink, magicLinkLogin
+  verifyEmail,
+  createMagicLink, magicLinkLogin,
+  logout,
+  getEmails, createEmail, deleteEmail,
+  createCredential, getCredentials, deleteCredential,
+  getSessions, deleteSession
 ] = [
     registerServer(server, client), loginServer(server, client), refreshServer(server),
-    getEmailsServer(server), verifyEmailServer(server),
-    createMagicLinkServer(server), magicLinkLoginServer(server)
+    verifyEmailServer(server),
+    createMagicLinkServer(server), magicLinkLoginServer(server),
+    logoutServer(server),
+    getEmailsServer(server), createEmailServer(server), deleteEmailServer(server),
+    createCredentialsServer(server, client), getCredentialsServer(server), deleteCredentialServer(server),
+    getSessionsServer(server), deleteSessionServer(server)
   ]

@@ -6,7 +6,7 @@ import { challenge, challengeShape, login, loginShape, magicLinkEmail, magicLink
 import { createUserEmailPost, createUserEmailShape, deleteUserEmailPost, deleteUserEmailShape, getAllUserEmailsPost, getAllUserEmailsShape, updateUserEmailPost, updateUserEmailShape } from './posts/email'
 import { createUserCredentialPost, createUserCredentialShape, deleteUserCredentialPost, deleteUserCredentialShape, getAllUserCredentialsPost, getAllUserCredentialsShape, updateUserCredentialPost, updateUserCredentialShape } from './posts/credential'
 import { deleteUserSessionPost, deleteUserSessionShape, getAllUserSessionsPost, getAllUserSessionsShape } from './posts/session'
-import { refreshGet, refreshGetShape } from './gets'
+import { logoutGet, logoutGetShape, refreshGet, refreshGetShape } from './gets'
 import { guardJwts } from './guards'
 
 // import { logger } from '@bogeychan/elysia-logger'
@@ -50,6 +50,8 @@ const app = new Elysia()
     beforeHandle: ({ status, refresh, access, cookie: { auth }, bearer }) =>
       guardJwts({ status, refresh, access, cookie: { auth }, bearer })
   })
+
+  .get('/user/logout', logoutGet, logoutGetShape)
 
   .post('/user/email/get/all', getAllUserEmailsPost, getAllUserEmailsShape)
   .post('/user/email/create', createUserEmailPost, createUserEmailShape)
