@@ -64,6 +64,7 @@
       "name": "server",
       "dependencies": {
         "@bogeychan/elysia-logger": "^0.1.10",
+        "@elysiajs/bearer": "^1.4.3",
         "@elysiajs/cors": "^1.4.1",
         "@elysiajs/jwt": "^1.4.0",
         "@passwordless-id/webauthn": "^2.3.5",
@@ -179,6 +180,8 @@
     "@drizzle-team/brocli": ["@drizzle-team/brocli@0.10.2", "", {}, "sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w=="],
 
     "@ecies/ciphers": ["@ecies/ciphers@0.2.5", "", { "peerDependencies": { "@noble/ciphers": "^1.0.0" } }, "sha512-GalEZH4JgOMHYYcYmVqnFirFsjZHeoGMDt9IxEnM9F7GRUUyUksJ7Ou53L83WHJq3RWKD3AcBpo0iQh0oMpf8A=="],
+
+    "@elysiajs/bearer": ["@elysiajs/bearer@1.4.3", "", { "peerDependencies": { "elysia": ">= 1.4.3" } }, "sha512-UWJ94jGGOzSlD3CCspC11/vFGKwy6RI9QvaZVPzlSu1Wxp/pKmOhKA+R2ppfbluMHXfxcc2xgK3x4+uuCML7GA=="],
 
     "@elysiajs/cors": ["@elysiajs/cors@1.4.1", "", { "peerDependencies": { "elysia": ">= 1.4.0" } }, "sha512-lQfad+F3r4mNwsxRKbXyJB8Jg43oAOXjRwn7sKUL6bcOW3KjUqUimTS+woNpO97efpzjtDE0tEjGk9DTw8lqTQ=="],
 

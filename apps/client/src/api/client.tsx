@@ -1,14 +1,24 @@
-import { edenTreaty } from "@elysiajs/eden"
+import { treaty } from "@elysiajs/eden"
 import type { App } from "../../../server/src"
-import { client } from "@passwordless-id/webauthn"
+import { client, type AuthenticationResponseJSON } from "@passwordless-id/webauthn"
+import { useAuthStore } from "@/store/auth"
 
+type Server = ReturnType<typeof treaty<App>>
+type PasskeyClient = typeof client
 
-const server = edenTreaty<App>(import.meta.env.VITE_SERVER_URL!, {
-  $fetch: { credentials: 'include' }
+const server = treaty<App>(import.meta.env.VITE_SERVER_URL!, {
+  onRequest: () => ({
+    headers: {
+      authorization: `Bearer ${useAuthStore.getState().jwt}`,
+    }
+  }),
+  fetch: {
+    credentials: 'include'
+  }
 })
 
 
-const registerServer = (server, passkeyClient) => async (user: { username: string, email: string }) => {
+const registerServer = (server: Server, passkeyClient: PasskeyClient) => async (user: { username: string, email: string }) => {
   const challengeId = crypto.randomUUID()
   const { data, error } = await server.user.challenge.post({ challengeId })
 
@@ -29,18 +39,18 @@ const registerServer = (server, passkeyClient) => async (user: { username: strin
   }
 }
 
-const refreshServer = (server) => async (jwt) => {
-  return await server.refresh.post({ jwt })
+const refreshServer = (server: Server) => async () => {
+  return await server.refresh.get()
 }
 
-const loginServer = (server, passkeyClient) => async () => {
+const loginServer = (server: Server, passkeyClient: PasskeyClient) => async () => {
   const challengeId = crypto.randomUUID()
   const { data, error } = await server.user.challenge.post({ challengeId })
 
   if (error) {
     return { data, error }
   } else {
-    const authentication = await passkeyClient.authenticate({
+    const authentication: AuthenticationResponseJSON = await passkeyClient.authenticate({
       challenge: data,
     })
 
@@ -51,24 +61,70 @@ const loginServer = (server, passkeyClient) => async () => {
   }
 }
 
-const getEmailsServer = (server) => async (userId) =>
-  await server.user.emails.post({ userId })
-
-const verifyEmailServer = (server) => async (email) =>
+const verifyEmailServer = (server: Server) => async (email: string) =>
   await server.user.email.verify.post({ email })
 
-const createMagicLinkServer = (server) => async (email: string) =>
+const createMagicLinkServer = (server: Server) => async (email: string) =>
   await server.user.login["magic-link"].post({ email })
 
-const magicLinkLoginServer = (server) => async (token: string) =>
+const magicLinkLoginServer = (server: Server) => async (token: string) =>
   await server.user.verify.post({ token })
+
+const logoutServer = (server: Server) => async () =>
+  await server.user.logout.get()
+
+const getEmailsServer = (server: Server) => async (userId: string) =>
+  await server.user.email.get.all.post({ userId })
+
+const createEmailServer = (server: Server) => async (userId: string, email: string) =>
+  await server.user.email.create.post({ userId, email })
+
+const deleteEmailServer = (server: Server) => async (emailId: string) =>
+  await server.user.email.delete.post({ emailId })
+
+const getCredentialsServer = (server: Server) => async (userId: string) =>
+  await server.user.credential.get.all.post({ userId })
+
+const createCredentialsServer = (server: Server, passkeyClient: PasskeyClient) => async ({ userId, username, email }) => {
+  const challengeId = crypto.randomUUID()
+
+  const { data, error } = await server.user.challenge.post({ challengeId })
+
+  if (error) {
+    return { data, error }
+  } else {
+    const registration = await passkeyClient.register({
+      challenge: data,
+      user: { displayName: username, name: email }
+    })
+
+    return await server.user.credential.create.post({ userId, challengeId, registration })
+  }
+}
+
+const deleteCredentialServer = (server: Server) => async (passkeyId: string) =>
+  await server.user.credential.delete.post({ credentialId: passkeyId })
+
+const getSessionsServer = (server: Server) => async (userId: string) =>
+  await server.user.session.get.all.post({ userId })
+
+const deleteSessionServer = (server: Server) => async (familyId: string) =>
+  await server.user.session.delete.post({ familyId })
 
 export const [
   register, login, refresh,
-  getEmails, verifyEmail,
-  createMagicLink, magicLinkLogin
+  verifyEmail,
+  createMagicLink, magicLinkLogin,
+  logout,
+  getEmails, createEmail, deleteEmail,
+  createCredential, getCredentials, deleteCredential,
+  getSessions, deleteSession
 ] = [
     registerServer(server, client), loginServer(server, client), refreshServer(server),
-    getEmailsServer(server), verifyEmailServer(server),
-    createMagicLinkServer(server), magicLinkLoginServer(server)
+    verifyEmailServer(server),
+    createMagicLinkServer(server), magicLinkLoginServer(server),
+    logoutServer(server),
+    getEmailsServer(server), createEmailServer(server), deleteEmailServer(server),
+    createCredentialsServer(server, client), getCredentialsServer(server), deleteCredentialServer(server),
+    getSessionsServer(server), deleteSessionServer(server)
   ]
