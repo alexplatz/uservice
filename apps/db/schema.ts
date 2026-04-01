@@ -49,12 +49,12 @@ export const emails = sqliteTable('emails', {
 })
 
 export const sessions = sqliteTable('sessions', {
-  userId: integer('userId').references(() => users.id),
   familyId: text('familyId').primaryKey().$defaultFn(Bun.randomUUIDv7),
   refreshToken: text('refreshToken'),
   lastUsed: text('lastUsed')
     .notNull()
     .default(sql`current_timestamp`)
     .$onUpdate(() => sql`current_timestamp`),
+  userId: text('userId').references(() => users.id),
 })
 
