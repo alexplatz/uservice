@@ -22,7 +22,6 @@ export const Route = createFileRoute('/dashboard/account')({
           <Button onClick={async () => {
             await logout()
             setJwt('')
-            useAuthStore.persist.clearStorage()
             navigate({
               to: "/"
             })
