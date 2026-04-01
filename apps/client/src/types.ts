@@ -9,3 +9,15 @@ export type emailData = {
   isPrimary: boolean,
   verified: boolean
 }
+
+export type passkeyData = {
+  id: string,
+  publicKey: string,
+  algorithm: number,
+  transports: string[]
+}
+
+export type sessionData = {
+  familyId: string,
+  lastUsed: string
+}

@@ -3,7 +3,7 @@ import { refresh } from "../api/client"
 export const isAuthed = async (jwt: string): Promise<boolean> =>
   isExpired(jwt) ?
     // will probably need to specify this at some point
-    ((await refresh(jwt)).status < 400) :
+    ((await refresh()).status < 400) :
     true
 
 const isExpired = (jwt: string): boolean => {
