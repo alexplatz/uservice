@@ -8,14 +8,14 @@ const { randomBytes } = await import('node:crypto');
 
 export const jwtData = async ({ refresh, access, auth, bearer }) => ({
   refreshPayload: await refresh.verify(auth.value),
-  user: (await access.verify(bearer))?.user,
+  validAccess: await access.verify(bearer),
   session: await getUserSession(auth.value)
 })
 
-export const verifyJwtData = async ({ status, refreshPayload, user, session }) => {
+export const verifyJwtData = async ({ status, refreshPayload, validAccess, session }) => {
   if (!refreshPayload) {
     return status(401, 'no refresh token')
-  } else if (!user) {
+  } else if (!validAccess) {
     return status(401, 'no access token')
   } else if (!session) {
     await deleteUserSession(refreshPayload.familyId)
@@ -26,48 +26,51 @@ export const verifyJwtData = async ({ status, refreshPayload, user, session }) =
 export const checkJwts = async ({ status, refresh, access, auth, bearer }) => {
   const {
     refreshPayload,
-    user,
+    validAccess,
     session
   } = await jwtData({ refresh, access, auth, bearer })
 
-  return await verifyJwtData({ status, refreshPayload, user, session })
+  return await verifyJwtData({ status, refreshPayload, validAccess, session })
 }
 
 export const refreshJwts = async ({ status, refresh, access, auth, bearer }) => {
   const {
     refreshPayload,
-    user,
     session
   } = await jwtData({ refresh, access, auth, bearer })
 
-  const errors = await verifyJwtData({ status, refreshPayload, user, session })
-  if (errors) { return errors }
+  if (!refreshPayload) {
+    return status(401, 'no refresh token')
+  } else if (!session) {
+    await deleteUserSession(refreshPayload.familyId)
+    return status(401, 'stale refresh token')
+  }
 
   const newRefresh = await refresh.sign({
-    userId: user.id,
+    user: refreshPayload.user,
     familyId: refreshPayload.familyId
   })
 
   const [{ familyId }] = await createUserSession(
-    user.id,
+    refreshPayload.user.id,
     refreshPayload.familyId,
     newRefresh
   )
 
-  const newAccess = await access.sign({ user, familyId })
+  const newAccess = await access.sign({ user: refreshPayload.user, familyId })
 
   setCookie(auth, newRefresh)
 
   return {
     jwt: newAccess,
-    userId: user.id,
-    username: user.username,
+    userId: refreshPayload.user.id,
+    username: refreshPayload.user.username,
   }
 }
 
 export const createJwts = async (refresh, access, auth, user) => {
   const newFamilyId = Bun.randomUUIDv7()
-  const newRefresh = await refresh.sign({ userId: user.id, familyId: newFamilyId })
+  const newRefresh = await refresh.sign({ user, familyId: newFamilyId })
   const [{ familyId }] = await createUserSession(user.id, newFamilyId, newRefresh)
 
   const newAccess = await access.sign({ user, familyId })
