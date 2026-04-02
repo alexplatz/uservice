@@ -35,6 +35,11 @@ const deleteUserSessionDb = (db: BunSQLiteDatabase) => async (familyId: string) 
     .delete(sessions)
     .where(eq(sessions.familyId, familyId))
 
+const deleteStaleUserSessionDb = (db: BunSQLiteDatabase) => async (refreshToken: string) =>
+  await db
+    .delete(sessions)
+    .where(eq(sessions.refreshToken, refreshToken))
+
 
 /* composite queries */
 
@@ -53,7 +58,9 @@ const getAllUserSessionsDb = (db: BunSQLiteDatabase) => async (userId: string) =
 /* exports */
 
 export const [
-  getAllUserSessions, createUserSession, deleteUserSession, getUserSession
+  getAllUserSessions, createUserSession, deleteUserSession, getUserSession,
+  deleteStaleUserSession
 ] = [
-    getAllUserSessionsDb(db), createUserSessionDb(db), deleteUserSessionDb(db), getUserSessionDb(db)
+    getAllUserSessionsDb(db), createUserSessionDb(db), deleteUserSessionDb(db), getUserSessionDb(db),
+    deleteStaleUserSessionDb(db)
   ]

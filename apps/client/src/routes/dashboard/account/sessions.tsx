@@ -1,35 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useUserStore } from "@/store/user"
 
 import type { sessionData } from "@/types";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteSession, getSessions } from "@/api/client";
 import { useState } from "react";
 import { DeleteAlert } from './-utils'
+import { asQuery, queryClient } from "@/utils/query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute('/dashboard/account/sessions')({
-  beforeLoad: async () => {
-    const { id, sessions } = useUserStore.getState()
-
-    // move cache logic to client
-    if (!sessions?.length) {
-      const { data, err } = await getSessions(id)
-      if (err) {
-        console.log(err)
-      } else {
-        useUserStore.setState({ sessions: data })
-      }
-    }
-  },
   component: () => {
-    const { sessions } = useUserStore()
+    const queryClient = useQueryClient()
+    const id = queryClient.getQueryData(['id'])
+
+    const { data, isLoading } = useQuery({
+      queryKey: ['sessions'],
+      queryFn: () => asQuery(getSessions, id),
+    })
 
     return <>{
-      sessions?.length ?
-        <SessionsTable
-          sessions={sessions}
-        /> :
-        <p>No sessions... 🤔</p>
+      isLoading ? <p>Loading...</p> :
+        data?.length ? <SessionsTable sessions={data} /> :
+          <p>No sessions... 🤔</p>
     }</>
   }
 })
@@ -60,7 +52,7 @@ const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string
       <TableCell>
         <DeleteAlert
           target={familyId}
-          fn={deleteSession}
+          fn={mutateSessions}
           message='This may log you out.'
           open={alertOpen}
           setOpen={setAlertOpen}
@@ -68,4 +60,17 @@ const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string
       </TableCell>
     </TableRow>
   </>
+}
+
+// maybe create withMutation api wrapper
+const mutateSessions = (familyId: string) => {
+  const { error } = deleteSession(familyId)
+
+  if (error) {
+    console.log(error)
+  } else {
+    queryClient.setQueryData(['sessions'],
+      (oldSessions: sessionData[]) => oldSessions
+        .filter(session => session.familyId !== familyId))
+  }
 }

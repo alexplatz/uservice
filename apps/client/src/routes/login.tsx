@@ -1,11 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAuthStore } from "../store/auth";
-import { useUserStore } from "../store/user";
-import { createMagicLink, login, verifyEmail } from "../api/client";
+import { createMagicLink, login } from "../api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { asQuery, queryClient } from "@/utils/query";
 
 export const Route = createFileRoute('/login')({
   component: Login
@@ -15,24 +14,20 @@ function Login() {
   const { redirect } = Route.useSearch()
   const navigate = Route.useNavigate()
 
-  const { setJwt } = useAuthStore()
-  const { setId, setUsername } = useUserStore()
   const [error, setError] = useState('')
   const [email, setEmail] = useState('')
 
   const passkeyLogin = async () => {
-    const { data, error } = await login()
+    const data = await queryClient.fetchQuery({
+      queryKey: ['login'],
+      queryFn: () => asQuery(login)
+    })
 
-    if (error) {
-      setError(error.message)
-    } else {
-      const { userId, username, jwt } = data
+    queryClient.setQueryData(['jwt'], data.jwt)
+    queryClient.setQueryData(['id'], data.userId)
+    queryClient.setQueryData(['username'], data.username)
 
-      setJwt(jwt)
-      setUsername(username)
-      setId(userId)
-      navigate({ to: redirect })
-    }
+    navigate({ to: redirect })
   }
 
   const emailLogin = async (email: string) => {

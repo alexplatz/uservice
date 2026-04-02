@@ -1,7 +1,7 @@
 import { treaty } from "@elysiajs/eden"
 import type { App } from "../../../server/src"
 import { client, type AuthenticationResponseJSON } from "@passwordless-id/webauthn"
-import { useAuthStore } from "@/store/auth"
+import { queryClient } from "@/utils/query"
 
 type Server = ReturnType<typeof treaty<App>>
 type PasskeyClient = typeof client
@@ -9,8 +9,8 @@ type PasskeyClient = typeof client
 const server = treaty<App>(import.meta.env.VITE_SERVER_URL!, {
   onRequest: () => ({
     headers: {
-      authorization: useAuthStore.getState().jwt ?
-        `Bearer ${useAuthStore.getState().jwt}` :
+      authorization: queryClient.getQueryData(['jwt']) ?
+        `Bearer ${queryClient.getQueryData(['jwt'])}` :
         '',
     }
   }),
@@ -28,7 +28,7 @@ const withRefresh = async (reqFn) => {
       undefined
 
   if (refreshRes?.data) {
-    useAuthStore.setState({ jwt: refreshRes.data.jwt })
+    // reqFn may be operating with stale data 
     return await reqFn()
   } else {
     return reqFnRes
@@ -58,7 +58,12 @@ const registerServer = (server: Server, passkeyClient: PasskeyClient) => async (
 }
 
 const refreshServer = (server: Server) => async () => {
-  return await server.refresh.get()
+  const refreshRes = await server.refresh.get()
+  if (refreshRes.data) {
+    queryClient.setQueryData(['jwt'], refreshRes.data.jwt)
+    queryClient.setQueryData(['id'], refreshRes.data.userId)
+  }
+  return refreshRes
 }
 
 const loginServer = (server: Server, passkeyClient: PasskeyClient) => async () => {
@@ -141,10 +146,11 @@ const getSessionsServer = (server: Server) => async (userId: string) =>
     await server.user.session.get.all.post({ userId })
   )
 
-const deleteSessionServer = (server: Server) => async (familyId: string) =>
-  await withRefresh(async () =>
+const deleteSessionServer = (server: Server) => async (familyId: string) => {
+  return await withRefresh(async () =>
     await server.user.session.delete.post({ familyId })
   )
+}
 
 export const [
   register, login, refresh,

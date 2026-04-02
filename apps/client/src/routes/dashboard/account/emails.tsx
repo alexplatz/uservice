@@ -9,27 +9,23 @@ import { SquarePenIcon, Trash2Icon } from "lucide-react";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { asQuery } from "@/utils/query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute('/dashboard/account/emails')({
-  beforeLoad: async () => {
-    const { id, emails } = useUserStore.getState()
-
-    if (!emails?.length) {
-      const { data, err } = await getEmails(id)
-      if (err) {
-        console.log(err)
-      } else {
-        useUserStore.setState({ emails: data })
-      }
-    }
-  },
   component: () => {
-    const { emails } = useUserStore()
+    const queryClient = useQueryClient()
+    const id = queryClient.getQueryData(['id'])
+
+    const { data, isLoading } = useQuery({
+      queryKey: ['emails'],
+      queryFn: () => asQuery(getEmails, id),
+    })
 
     return <>{
-      emails?.length ?
-        <EmailsTable emails={emails} /> :
-        <p>No emails... 🤔</p>
+      isLoading ? <p>Loading...</p> :
+        data?.length ? <EmailsTable emails={data} /> :
+          <p>No emails... 🤔</p>
     }</>
   }
 })
@@ -37,6 +33,7 @@ export const Route = createFileRoute('/dashboard/account/emails')({
 const EmailsTable = ({ emails }: { emails: emailData[] }) => {
   const { id } = useUserStore()
   const [newEmail, setNewEmail] = useState('')
+
   return <>
     <Table>
       <TableCaption>Your emails</TableCaption>

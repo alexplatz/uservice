@@ -1,7 +1,7 @@
 import { createMagicToken, deleteChallenge, getChallenge } from "../../db/client/auth"
 import { createUserCredential } from "../../db/client/credential";
-import { deleteUserSession, getUserSession, createUserSession } from "../../db/client/session"
-import { server, type RegistrationInfo, type RegistrationJSON } from '@passwordless-id/webauthn'
+import { deleteUserSession, getUserSession, createUserSession, deleteStaleUserSession } from "../../db/client/session"
+import { server, type RegistrationJSON } from '@passwordless-id/webauthn'
 import { status } from 'elysia'
 
 const { randomBytes } = await import('node:crypto');
@@ -56,6 +56,8 @@ export const refreshJwts = async ({ status, refresh, access, auth, bearer }) => 
     refreshPayload.familyId,
     newRefresh
   )
+
+  if (auth.value !== newRefresh) { await deleteStaleUserSession(auth.value) }
 
   const newAccess = await access.sign({ user: refreshPayload.user, familyId })
 

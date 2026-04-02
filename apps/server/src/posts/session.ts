@@ -19,4 +19,3 @@ export const deleteUserSessionShape = {
     familyId: t.String(),
   })
 }
-

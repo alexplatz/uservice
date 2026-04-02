@@ -6,30 +6,23 @@ import { createCredential, deleteCredential, getCredentials } from "@/api/client
 import type { passkeyData } from "@/types";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash2Icon } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { asQuery } from "@/utils/query";
 
 export const Route = createFileRoute('/dashboard/account/passkeys')({
-  beforeLoad: async () => {
-    const { id, passkeys } = useUserStore.getState()
-
-    // figure out api client caching
-    if (!passkeys?.length) {
-      const { data, err } = await getCredentials(id)
-      if (err) {
-        console.log(err)
-      } else {
-        useUserStore.setState({ passkeys: data })
-      }
-    }
-  },
   component: () => {
-    const { passkeys } = useUserStore()
+    const queryClient = useQueryClient()
+    const id = queryClient.getQueryData(['id'])
+
+    const { data, isLoading } = useQuery({
+      queryKey: ['credentials'],
+      queryFn: () => asQuery(getCredentials, id),
+    })
 
     return <>{
-      passkeys?.length ?
-        <PasskeysTable
-          passkeys={passkeys}
-        /> :
-        <p>No passkeys.</p>
+      isLoading ? <p>Loading...</p> :
+        data?.length ? <PasskeysTable passkeys={data} /> :
+          <p>No passkeys.</p>
     }</>
   }
 })
