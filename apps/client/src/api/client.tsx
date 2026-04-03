@@ -62,6 +62,7 @@ const refreshServer = (server: Server) => async () => {
   if (refreshRes.data) {
     queryClient.setQueryData(['jwt'], refreshRes.data.jwt)
     queryClient.setQueryData(['id'], refreshRes.data.userId)
+    queryClient.setQueryData(['username'], refreshRes.data.username)
   }
   return refreshRes
 }
@@ -103,7 +104,7 @@ const getEmailsServer = (server: Server) => async (userId: string) =>
     await server.user.email.get.all.post({ userId })
   )
 
-const createEmailServer = (server: Server) => async (userId: string, email: string) =>
+const createEmailServer = (server: Server) => async ({ userId, email }: { userId: string, email: string }) =>
   await withRefresh(async () =>
     await server.user.email.create.post({ userId, email })
   )

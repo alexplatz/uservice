@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useUserStore } from "@/store/user"
 
 import { Button } from "@/components/ui/button"
 import { createEmail, deleteEmail, getEmails, verifyEmail } from "@/api/client";
@@ -9,7 +8,7 @@ import { SquarePenIcon, Trash2Icon } from "lucide-react";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { asQuery } from "@/utils/query";
+import { asQuery, mutate, queryClient } from "@/utils/query";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute('/dashboard/account/emails')({
@@ -31,7 +30,7 @@ export const Route = createFileRoute('/dashboard/account/emails')({
 })
 
 const EmailsTable = ({ emails }: { emails: emailData[] }) => {
-  const { id } = useUserStore()
+  const userId = queryClient.getQueryData(['id'])
   const [newEmail, setNewEmail] = useState('')
 
   return <>
@@ -67,7 +66,7 @@ const EmailsTable = ({ emails }: { emails: emailData[] }) => {
             }</TableCell>
             <TableCell className="flex justify-between w-[5rem]">
               <SquarePenIcon onClick={() => console.log('edit')} />
-              <Trash2Icon onClick={() => deleteEmail(id)} />
+              <Trash2Icon onClick={() => mutateEmailsDelete(id)} />
             </TableCell>
           </TableRow>
         ))}
@@ -82,6 +81,22 @@ const EmailsTable = ({ emails }: { emails: emailData[] }) => {
         onBlur={(e) => setNewEmail(e.target.value)}
       />
     </Field>
-    <Button onClick={() => createEmail(id, newEmail)}>Add</Button>
+    <Button onClick={() => mutateEmailsCreate({ userId, email: newEmail })}>Add</Button>
   </>
 }
+
+const mutateEmailsDelete = (emailId: string) => mutate({
+  queryFn: deleteEmail,
+  params: emailId,
+  queryKey: ['emails'],
+  handler: (old: emailData[]) =>
+    old.filter(email => email.id !== emailId)
+})
+
+const mutateEmailsCreate = ({ userId, email }) => mutate({
+  queryFn: createEmail,
+  params: { userId, email },
+  queryKey: ['emails'],
+  onSuccess: (data: emailData) => (old: emailData[]) =>
+    [data, ...old]
+})

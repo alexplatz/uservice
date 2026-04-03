@@ -17,3 +17,30 @@ export const asQuery = async (fn, args?) => {
 
   return data
 }
+
+export const mutate = async ({ queryFn, params, queryKey, handler, onSuccess }: Mutate) => {
+  const { data, error } = params ?
+    await queryFn(params) :
+    await queryFn()
+
+  if (error) {
+    console.log({
+      status: error.status,
+      message: error.value.summary
+    })
+  } else {
+    queryKey ?
+      handler ? queryClient.setQueryData(queryKey, handler) :
+        onSuccess ? queryClient.setQueryData(queryKey, onSuccess(data)) :
+          null :
+      null
+  }
+}
+type Mutate = {
+  queryFn: (...params: any) => Promise<{ data: any, error: any }>,
+  params?: any,
+  queryKey?: (string | number)[]
+  handler?: (oldData: any) => void
+  onSuccess?: (data: any) => (oldData: any) => void
+}
+

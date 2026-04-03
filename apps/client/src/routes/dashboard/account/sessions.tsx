@@ -5,7 +5,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { deleteSession, getSessions } from "@/api/client";
 import { useState } from "react";
 import { DeleteAlert } from './-utils'
-import { asQuery, queryClient } from "@/utils/query";
+import { asQuery, mutate } from "@/utils/query";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute('/dashboard/account/sessions')({
@@ -62,15 +62,10 @@ const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string
   </>
 }
 
-// maybe create withMutation api wrapper
-const mutateSessions = (familyId: string) => {
-  const { error } = deleteSession(familyId)
+const mutateSessions = (familyId: string) => mutate({
+  queryFn: deleteSession,
+  params: familyId,
+  queryKey: ['sessions'],
+  handler: (old: sessionData[]) => old.filter(sesh => sesh.familyId !== familyId)
+})
 
-  if (error) {
-    console.log(error)
-  } else {
-    queryClient.setQueryData(['sessions'],
-      (oldSessions: sessionData[]) => oldSessions
-        .filter(session => session.familyId !== familyId))
-  }
-}
