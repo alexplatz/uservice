@@ -1,13 +1,7 @@
-import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite'
+import { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite'
 import { eq } from 'drizzle-orm'
-import { Database } from 'bun:sqlite'
 import { users, sessions } from '../schema'
-
-// client is executed by server while embedded
-// so path needs to reflect where db is.
-// kinda gross tho
-const client = new Database(`${Bun.env.DB_URL!}`)
-export const db = drizzle({ client })
+import { db } from '../db'
 
 const createUserSessionDb = (db: BunSQLiteDatabase) => async (userId: string, familyId: string, refreshToken: string) =>
   await db
