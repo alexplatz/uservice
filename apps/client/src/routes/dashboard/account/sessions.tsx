@@ -52,7 +52,7 @@ const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string
       <TableCell>
         <DeleteAlert
           target={familyId}
-          fn={mutateSessions}
+          fn={mutateSessionsDelete}
           message='This may log you out.'
           open={alertOpen}
           setOpen={setAlertOpen}
@@ -62,7 +62,7 @@ const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string
   </>
 }
 
-const mutateSessions = (familyId: string) => mutate({
+const mutateSessionsDelete = (familyId: string) => mutate({
   queryFn: deleteSession,
   params: familyId,
   queryKey: ['sessions'],

@@ -1,12 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useAuthStore } from "@/store/auth";
 import { isAuthed } from "@/utils/dashboard";
+import { queryClient } from "@/utils/query";
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: async ({ location }) => {
-    const { jwt } = useAuthStore.getState()
+    const jwt = queryClient.getQueryData(['jwt'])
 
-    if (!(await isAuthed(jwt))) {
+    if (!(await isAuthed(jwt as string))) {
       throw redirect({
         to: '/login',
         search: {
@@ -15,11 +15,8 @@ export const Route = createFileRoute('/dashboard')({
       })
     }
   },
-  component: () => {
-
-    return <>
-      <Outlet />
-    </>
-  }
+  component: () => <>
+    <Outlet />
+  </>
 })
 
