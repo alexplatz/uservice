@@ -4,6 +4,7 @@ import { useUserStore } from "../store/user";
 import { useState } from "react";
 import { register } from "../api/client";
 import type { RegisterUser } from "../types";
+import { asQuery, queryClient } from "@/utils/query";
 
 export const Route = createFileRoute('/register')({
   component: Register
@@ -11,32 +12,26 @@ export const Route = createFileRoute('/register')({
 
 function Register() {
   const navigate = Route.useNavigate()
-  const { setJwt } = useAuthStore()
-  const { setId, setUsername } = useUserStore()
 
   const [inputUsername, setInputUsername] = useState('')
   const [inputEmail, setInputEmail] = useState('')
-  const [error, setError] = useState('')
 
   const handleClick = async (inputtedUser: RegisterUser) => {
-    const { data, error } = await register(inputtedUser)
+    const { data } = await queryClient.fetchQuery({
+      queryKey: ['login'],
+      queryFn: () => asQuery(async () => await register(inputtedUser))
+    })
 
-    if (error) {
-      setError(error.message)
-    } else {
-      const { userId, username, jwt } = data
+    queryClient.setQueryData(['jwt'], data.jwt)
+    queryClient.setQueryData(['id'], data.userId)
+    queryClient.setQueryData(['username'], data.username)
 
-      setJwt(jwt)
-      setId(userId)
-      setUsername(username)
-      navigate({ to: '/dashboard' })
-    }
+    navigate({ to: '/dashboard' })
   }
 
 
   return <div className="p-2">
     <h3>Please enter a username and email</h3>
-    {error ? <p>{error}</p> : null}
     <input
       type="text"
       placeholder="username"

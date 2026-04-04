@@ -1,28 +1,25 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { useUserStore } from "@/store/user";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarProvider, SidebarRail } from "@/components/ui/sidebar";
 import { ClockFadingIcon, KeyRound, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/api/client";
-import { useAuthStore } from "@/store/auth";
+import { queryClient } from "@/utils/query";
 
 export const Route = createFileRoute('/dashboard/account')({
   beforeLoad: async () => { },
   component: () => {
     const navigate = Route.useNavigate()
-    const { username } = useUserStore()
-    const { setJwt } = useAuthStore()
+    const username = queryClient.getQueryData(['username'])
 
     return <>
       <SidebarProvider defaultOpen={false} offsetTop={40}>
         <AccountSidebar />
         <div>
-          <h1>{username} account settings</h1>
+          <h1>{username as string} account settings</h1>
           <Outlet />
           <Button onClick={async () => {
             await logout()
-            setJwt('')
-            useAuthStore.persist.clearStorage()
+            queryClient.setQueryData(['jwt'], '')
             navigate({
               to: "/"
             })
