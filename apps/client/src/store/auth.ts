@@ -1,5 +1,4 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand"
 
 type AuthState = {
   jwt: string,
@@ -10,12 +9,9 @@ type AuthAction = {
 }
 
 export const useAuthStore = create<AuthState & AuthAction>()(
-  persist(
-    (set) => ({
-      jwt: '',
-      setJwt: (jwt) => set(() => ({ jwt: jwt })),
-    }),
-    { name: 'auth-storage' }
-  )
+  (set) => ({
+    jwt: '',
+    setJwt: (jwt) => set(() => ({ jwt: jwt })),
+  }),
 )
 

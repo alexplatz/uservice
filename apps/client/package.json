@@ -14,7 +14,7 @@
     "@fontsource-variable/geist": "^5.2.8",
     "@passwordless-id/webauthn": "^2.3.5",
     "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/react-query": "^5.90.21",
+    "@tanstack/react-query": "^5.96.1",
     "@tanstack/react-router": "^1.159.5",
     "@tanstack/react-router-devtools": "^1.159.5",
     "@types/react": "^19.2.14",

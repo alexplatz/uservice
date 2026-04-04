@@ -2,6 +2,7 @@ import { magicLinkLogin } from "@/api/client";
 import { useAuthStore } from "@/store/auth";
 import { useUserStore } from "@/store/user";
 import type { emailData } from "@/types";
+import { queryClient } from "@/utils/query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -47,12 +48,10 @@ export const Route = createFileRoute('/')({
           email: undefined | emailData
         } = data
 
-        useAuthStore.setState({ jwt })
-        useUserStore.setState({
-          username,
-          id: userId,
-          emails: updateVerifiedCache(useUserStore.getState().emails, email)
-        })
+        queryClient.setQueryData(['jwt'], jwt)
+        queryClient.setQueryData(['username'], username)
+        queryClient.setQueryData(['id'], userId)
+        queryClient.setQueryData(['emails'], email)
 
         throw redirect({
           to: '/dashboard'

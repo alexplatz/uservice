@@ -1,4 +1,4 @@
-import { db } from "./client";
+import { db } from "./db";
 import { users, emails, credentials } from "./schema";
 
 const [userResult] = await db.insert(users).values([

@@ -7,7 +7,7 @@ export const isAuthed = async (jwt: string): Promise<boolean> =>
     true
 
 const isExpired = (jwt: string): boolean => {
-  const exp = expiry(jwt)
+  const exp = jwt ? expiry(jwt) : undefined
   const expireDate = exp ?
     new Date(exp * 1000) :
     undefined
