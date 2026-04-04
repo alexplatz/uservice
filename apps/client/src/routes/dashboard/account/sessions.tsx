@@ -1,35 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useUserStore } from "@/store/user"
 
 import type { sessionData } from "@/types";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteSession, getSessions } from "@/api/client";
 import { useState } from "react";
 import { DeleteAlert } from './-utils'
+import { asQuery, mutate } from "@/utils/query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute('/dashboard/account/sessions')({
-  beforeLoad: async () => {
-    const { id, sessions } = useUserStore.getState()
-
-    // move cache logic to client
-    if (!sessions?.length) {
-      const { data, err } = await getSessions(id)
-      if (err) {
-        console.log(err)
-      } else {
-        useUserStore.setState({ sessions: data })
-      }
-    }
-  },
   component: () => {
-    const { sessions } = useUserStore()
+    const queryClient = useQueryClient()
+    const id = queryClient.getQueryData(['id'])
+
+    const { data, isLoading } = useQuery({
+      queryKey: ['sessions'],
+      queryFn: () => asQuery(getSessions, id),
+    })
 
     return <>{
-      sessions?.length ?
-        <SessionsTable
-          sessions={sessions}
-        /> :
-        <p>No sessions... 🤔</p>
+      isLoading ? <p>Loading...</p> :
+        data?.length ? <SessionsTable sessions={data} /> :
+          <p>No sessions... 🤔</p>
     }</>
   }
 })
@@ -60,7 +52,7 @@ const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string
       <TableCell>
         <DeleteAlert
           target={familyId}
-          fn={deleteSession}
+          fn={mutateSessionsDelete}
           message='This may log you out.'
           open={alertOpen}
           setOpen={setAlertOpen}
@@ -69,3 +61,11 @@ const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string
     </TableRow>
   </>
 }
+
+const mutateSessionsDelete = (familyId: string) => mutate({
+  queryFn: deleteSession,
+  params: familyId,
+  queryKey: ['sessions'],
+  handler: (old: sessionData[]) => old.filter(sesh => sesh.familyId !== familyId)
+})
+

@@ -1,6 +1,5 @@
 import type { emailData, passkeyData, sessionData } from '@/types'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 
 type UserState = {
   id: string,
@@ -19,20 +18,17 @@ type UserAction = {
 }
 
 export const useUserStore = create<UserState & UserAction>()(
-  persist(
-    (set) => ({
-      id: '',
-      username: '',
-      emails: [],
-      passkeys: [],
-      sessions: [],
-      setId: (id: string) => set(() => ({ id: id })),
-      setUsername: (username: string) => set(() => ({ username: username })),
-      setEmails: (emails: emailData[]) => set(() => ({ emails: emails })),
-      setPasskeys: (passkeys: passkeyData[]) => set(() => ({ passkeys: passkeys })),
-      setSessions: (sessions: sessionData[]) => set(() => ({ sessions: sessions }))
-    }),
-    { name: 'user-storage' }
-  )
+  (set) => ({
+    id: '',
+    username: '',
+    emails: [],
+    passkeys: [],
+    sessions: [],
+    setId: (id: string) => set(() => ({ id: id })),
+    setUsername: (username: string) => set(() => ({ username: username })),
+    setEmails: (emails: emailData[]) => set(() => ({ emails: emails })),
+    setPasskeys: (passkeys: passkeyData[]) => set(() => ({ passkeys: passkeys })),
+    setSessions: (sessions: sessionData[]) => set(() => ({ sessions: sessions }))
+  })
 )
 

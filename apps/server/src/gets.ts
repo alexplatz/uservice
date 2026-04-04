@@ -18,12 +18,14 @@ export const refreshGetShape = {
 export const logoutGet = async ({ status, refresh, access, cookie: { auth }, bearer }) => {
   const {
     refreshPayload,
-    user,
+    validAccess,
     session
   } = await jwtData({ refresh, access, auth, bearer })
 
-  const errors = await verifyJwtData({ status, refreshPayload, user, session })
+  const errors = await verifyJwtData({ status, refreshPayload, validAccess, session })
   if (errors) { return errors }
+
+  auth.remove()
 
   return deleteUserSession(refreshPayload.familyId)
 }

@@ -1,13 +1,7 @@
-import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite'
+import { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite'
 import { eq } from 'drizzle-orm'
-import { Database } from 'bun:sqlite'
 import { users, sessions } from '../schema'
-
-// client is executed by server while embedded
-// so path needs to reflect where db is.
-// kinda gross tho
-const client = new Database(`${Bun.env.DB_URL!}`)
-export const db = drizzle({ client })
+import { db } from '../db'
 
 const createUserSessionDb = (db: BunSQLiteDatabase) => async (userId: string, familyId: string, refreshToken: string) =>
   await db
@@ -35,6 +29,11 @@ const deleteUserSessionDb = (db: BunSQLiteDatabase) => async (familyId: string) 
     .delete(sessions)
     .where(eq(sessions.familyId, familyId))
 
+const deleteStaleUserSessionDb = (db: BunSQLiteDatabase) => async (refreshToken: string) =>
+  await db
+    .delete(sessions)
+    .where(eq(sessions.refreshToken, refreshToken))
+
 
 /* composite queries */
 
@@ -53,7 +52,9 @@ const getAllUserSessionsDb = (db: BunSQLiteDatabase) => async (userId: string) =
 /* exports */
 
 export const [
-  getAllUserSessions, createUserSession, deleteUserSession, getUserSession
+  getAllUserSessions, createUserSession, deleteUserSession, getUserSession,
+  deleteStaleUserSession
 ] = [
-    getAllUserSessionsDb(db), createUserSessionDb(db), deleteUserSessionDb(db), getUserSessionDb(db)
+    getAllUserSessionsDb(db), createUserSessionDb(db), deleteUserSessionDb(db), getUserSessionDb(db),
+    deleteStaleUserSessionDb(db)
   ]
