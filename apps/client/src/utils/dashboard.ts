@@ -21,3 +21,11 @@ const expiry = (jwt: string): number | undefined =>
   jwt !== '' ?
     JSON.parse(window.atob(jwt.split('.')[1]))?.exp :
     undefined
+
+
+export const getOauthAccessToken = () => {
+  const accessTokenRegex = /access_token=([^&]+)/;
+  const isMatch = window.location.href.match(accessTokenRegex);
+
+  return isMatch ? isMatch[1] : undefined
+}

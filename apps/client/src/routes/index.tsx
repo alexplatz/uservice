@@ -1,7 +1,6 @@
 import { magicLinkLogin } from "@/api/client";
-import { useAuthStore } from "@/store/auth";
-import { useUserStore } from "@/store/user";
 import type { emailData } from "@/types";
+import { getOauthAccessToken } from "@/utils/dashboard";
 import { queryClient } from "@/utils/query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
@@ -27,9 +26,10 @@ export const Route = createFileRoute('/')({
   component: Index,
   // convert to zod in the future
   validateSearch: (search: Record<string, unknown>): IndexSearch => ({
-    token: search?.token as string
+    token: search.token as string,
   }),
   beforeLoad: async ({ search: { token } }) => {
+    const oauthAccessToken = getOauthAccessToken()
     if (token) {
       const { data, error } = await magicLinkLogin(token)
 
@@ -58,11 +58,21 @@ export const Route = createFileRoute('/')({
         })
       }
     }
+    if (oauthAccessToken) {
+      const googleOauthUrlEmail = "https://www.googleapis.com/oauth2/v2/userinfo"
+      const res = await fetch(googleOauthUrlEmail, {
+        headers: {
+          Authorization: `Bearer ${oauthAccessToken}`,
+          Accept: "application/json"
+        }
+      })
+      const user = res.status === 200 ?
+        await res.json().then(json => ({
+          email: json.email,
+          username: json.name
+        })) :
+        undefined
+      console.log(user)
+    }
   }
 })
-
-const updateVerifiedCache = (emails: emailData[], verifiedEmail: undefined | emailData) =>
-  verifiedEmail ? [
-    ...emails.filter(email => email.email !== verifiedEmail.email),
-    verifiedEmail
-  ] : emails

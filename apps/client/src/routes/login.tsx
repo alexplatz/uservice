@@ -38,12 +38,28 @@ function Login() {
     }
   }
 
+  // create /user/oauth/login
+  // create /user/oauth/register
+  // if /user/oauth/login fails with no user, /user/oauth/register
+  //   retry login
+  // add 'auth_provider', 'external_refresh_token', 'external_id' to session
+  // on logout, if session has external provider, attempt to oauth logout
+  const googleOauthLogin = () => {
+    const targetUrl = `https://accounts.google.com/o/oauth2/auth?redirect_uri=${encodeURIComponent(
+      window.location.origin
+    )}&response_type=token&client_id=${import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID!}&scope=openid%20email%20profile`;
+
+    window.location.href = targetUrl;
+  }
+
   return <div className="p-2">
     <h3>Please login</h3>
     {error ? <p>{error}</p> : null}
     <Button onClick={passkeyLogin}>
       Passkey Login
     </Button>
+    <p>or</p>
+    <Button onClick={googleOauthLogin}>Login with Google</Button>
     <p>or</p>
     <Field>
       <FieldLabel htmlFor='email'>Email</FieldLabel>
