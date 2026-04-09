@@ -9,17 +9,24 @@ const getAllUsersDb = (db: BunSQLiteDatabase) => async () =>
 const getUserDb = (db: BunSQLiteDatabase) => async (userId) =>
   await db.select().from(users).where(eq(users.id, userId))
 
-const persistUserDb = (db: BunSQLiteDatabase) => async (email, username) =>
+const createUserDb = (db: BunSQLiteDatabase) => async (email, username) =>
   await db.transaction(async (tx) => {
     const [dbUser] = await tx.insert(users).values([{ username }]).returning()
     await tx.insert(emails).values([{ email, userId: dbUser.id, isPrimary: true }]).returning()
 
     return tx
-      .select()
+      .select({
+        user: {
+          userId: users.id,
+          username: users.username
+        },
+        emails
+      })
       .from(users)
       .leftJoin(emails, eq(users.id, emails.userId))
       .where(eq(emails.email, email))
       .limit(1)
+      .get()
   })
 
 const persistChallengeDb = (db: BunSQLiteDatabase) => async (challengeId, challenge) =>
@@ -115,23 +122,36 @@ const getMagicTokenDetailsDb = (db: BunSQLiteDatabase) => async (newTokenHash) =
     return magicTokenDetails
   })
 
+const getUserByEmailDb = (db: BunSQLiteDatabase) => async (email: string) =>
+  await db
+    .select({
+      id: emails.userId,
+      username: users.username
+    })
+    .from(emails)
+    .leftJoin(users, eq(users.id, emails.userId))
+    .where(eq(emails.email, email))
+    .get()
+
 
 /* exports */
 
 export const [
   getAllUsers,
-  persistUser, getUser,
+  createUser, getUser,
   persistChallenge, getChallenge, deleteChallenge,
   persistCredential,
   getCredentialWithUser,
   createMagicToken, getMagicTokenDetails, updateMagicToken,
   updateEmailVerified,
+  getUserByEmail
 ] = [
     getAllUsersDb(db),
-    persistUserDb(db), getUserDb(db),
+    createUserDb(db), getUserDb(db),
     persistChallengeDb(db), getChallengeDb(db), deleteChallengeDb(db),
     persistCredentialDb(db),
     getCredentialWithUserDb(db),
     createMagicTokenDb(db), getMagicTokenDetailsDb(db), updateMagicTokenDb(db),
     updateEmailVerifiedDb(db),
+    getUserByEmailDb(db)
   ]

@@ -1,4 +1,6 @@
+import type { QueryClient } from "@tanstack/react-query"
 import { refresh } from "../api/client"
+import { queryClient } from "./query"
 
 export const isAuthed = async (jwt: string): Promise<boolean> =>
   isExpired(jwt) ?
@@ -29,3 +31,19 @@ export const getOauthAccessToken = () => {
 
   return isMatch ? isMatch[1] : undefined
 }
+
+const hydrateClientStateClient = (queryClient: QueryClient) => ({
+  jwt,
+  username,
+  userId
+}: {
+  jwt: string,
+  username: string,
+  userId: string
+}) => {
+  queryClient.setQueryData(['jwt'], jwt)
+  queryClient.setQueryData(['username'], username)
+  queryClient.setQueryData(['id'], userId)
+}
+
+export const hydrateClientState = hydrateClientStateClient(queryClient)

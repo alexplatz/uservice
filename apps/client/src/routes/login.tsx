@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { asQuery, queryClient } from "@/utils/query";
+import { hydrateClientState } from "@/utils/dashboard";
 
 export const Route = createFileRoute('/login')({
   component: Login
@@ -23,10 +24,11 @@ function Login() {
       queryFn: () => asQuery(login)
     })
 
-    queryClient.setQueryData(['jwt'], data.jwt)
-    queryClient.setQueryData(['id'], data.userId)
-    queryClient.setQueryData(['username'], data.username)
-
+    hydrateClientState({
+      jwt: data.jwt,
+      username: data.username,
+      userId: data.userId
+    })
     navigate({ to: redirect })
   }
 
@@ -38,17 +40,13 @@ function Login() {
     }
   }
 
-  // create /user/oauth/login
-  // create /user/oauth/register
-  // if /user/oauth/login fails with no user, /user/oauth/register
-  //   retry login
-  // add 'auth_provider', 'external_refresh_token', 'external_id' to session
-  // on logout, if session has external provider, attempt to oauth logout
+
   const googleOauthLogin = () => {
     const targetUrl = `https://accounts.google.com/o/oauth2/auth?redirect_uri=${encodeURIComponent(
       window.location.origin
     )}&response_type=token&client_id=${import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID!}&scope=openid%20email%20profile`;
 
+    // use tanstack here?
     window.location.href = targetUrl;
   }
 

@@ -153,6 +153,39 @@ const deleteSessionServer = (server: Server) => async (familyId: string) => {
   )
 }
 
+const loginOauthServer = (server: Server) => async ({ oauthAccessToken, email }: { oauthAccessToken: string, email: string }) =>
+  await withRefresh(async () =>
+    await server.user.oauth.login.post({ oauthAccessToken, email })
+  )
+
+const registerOauthServer = (server: Server) => async ({ oauthAccessToken, email, username }: { oauthAccessToken: string, email: string, username: string }) =>
+  await withRefresh(async () =>
+    await server.user.oauth.register.post({ oauthAccessToken, email, username })
+  )
+
+
+/****** oauth external requests ******/
+export const getGoogleOauthUser = async (oauthAccessToken: string) => {
+  const googleOauthUrlEmail = "https://www.googleapis.com/oauth2/v3/userinfo"
+  const res = await fetch(googleOauthUrlEmail, {
+    headers: {
+      Authorization: `Bearer ${oauthAccessToken}`,
+      Accept: "application/json"
+    }
+  })
+
+  return res.status === 200 ?
+    await res.json().then(json => ({
+      id: json.id,
+      email: json.email,
+      username: json.name
+    })) :
+    undefined
+}
+
+
+
+/****** exports ******/
 export const [
   register, login, refresh,
   verifyEmail,
@@ -160,7 +193,8 @@ export const [
   logout,
   getEmails, createEmail, deleteEmail,
   createCredential, getCredentials, deleteCredential,
-  getSessions, deleteSession
+  getSessions, deleteSession,
+  loginOauth, registerOauth
 ] = [
     registerServer(server, client), loginServer(server, client), refreshServer(server),
     verifyEmailServer(server),
@@ -168,5 +202,6 @@ export const [
     logoutServer(server),
     getEmailsServer(server), createEmailServer(server), deleteEmailServer(server),
     createCredentialsServer(server, client), getCredentialsServer(server), deleteCredentialServer(server),
-    getSessionsServer(server), deleteSessionServer(server)
+    getSessionsServer(server), deleteSessionServer(server),
+    loginOauthServer(server), registerOauthServer(server)
   ]

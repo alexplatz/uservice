@@ -9,6 +9,7 @@
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.25",
     "fp-ts": "^2.16.11",
+    "google-auth-library": "^10.6.2",
     "ts-pattern": "^5.9.0"
   },
   "devDependencies": {

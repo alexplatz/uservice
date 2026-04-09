@@ -1,7 +1,8 @@
-import { magicLinkLogin } from "@/api/client";
+import { getGoogleOauthUser, loginOauth, magicLinkLogin, registerOauth } from "@/api/client";
 import type { emailData } from "@/types";
-import { getOauthAccessToken } from "@/utils/dashboard";
+import { getOauthAccessToken, hydrateClientState } from "@/utils/dashboard";
 import { queryClient } from "@/utils/query";
+import type { QueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -36,43 +37,53 @@ export const Route = createFileRoute('/')({
       if (error) {
         console.log(error.message)
       } else {
-        const {
-          userId,
-          username,
-          jwt,
-          email
-        }: {
-          userId: string,
-          username: string,
-          jwt: string,
-          email: undefined | emailData
-        } = data
-
-        queryClient.setQueryData(['jwt'], jwt)
-        queryClient.setQueryData(['username'], username)
-        queryClient.setQueryData(['id'], userId)
-        queryClient.setQueryData(['emails'], email)
+        hydrateClientState({
+          jwt: data.jwt,
+          username: data.username,
+          userId: data.userId
+        })
+        // queryClient.setQueryData(['emails'], email)
 
         throw redirect({
           to: '/dashboard'
         })
       }
     }
+    // add 'auth_provider', 'external_refresh_token', 'external_id' to session
+    // on logout, if session has external provider, attempt to oauth logout
     if (oauthAccessToken) {
-      const googleOauthUrlEmail = "https://www.googleapis.com/oauth2/v2/userinfo"
-      const res = await fetch(googleOauthUrlEmail, {
-        headers: {
-          Authorization: `Bearer ${oauthAccessToken}`,
-          Accept: "application/json"
-        }
-      })
-      const user = res.status === 200 ?
-        await res.json().then(json => ({
-          email: json.email,
-          username: json.name
-        })) :
-        undefined
+      const user = await getGoogleOauthUser(oauthAccessToken)
       console.log(user)
+
+      if (user) {
+        const { data } = await loginOauth({
+          oauthAccessToken,
+          email: user.email
+        })
+
+        if (data) {
+          hydrateClientState({
+            jwt: data.jwt,
+            username: data.username,
+            userId: data.userId
+          })
+          console.log(data)
+
+        } else {
+          const data = await registerOauth({
+            oauthAccessToken,
+            email: user.email,
+            username: user.username
+          })
+          hydrateClientState({
+            jwt: data.jwt,
+            username: data.username,
+            userId: data.userId
+          })
+          console.log(data)
+        }
+      }
     }
   }
 })
+
