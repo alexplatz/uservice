@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query"
-import { refresh } from "../api/client"
+import { loginOauth, refresh, registerOauth } from "../api/client"
 import { queryClient } from "./query"
 
 export const isAuthed = async (jwt: string): Promise<boolean> =>
@@ -25,11 +25,31 @@ const expiry = (jwt: string): number | undefined =>
     undefined
 
 
-export const getOauthAccessToken = () => {
-  const accessTokenRegex = /access_token=([^&]+)/;
-  const isMatch = window.location.href.match(accessTokenRegex);
+export const isGoogleOauthRedirect = () =>
+  new URLSearchParams(window.location.search)
+    .get("scope")?.includes('googleapis')
 
-  return isMatch ? isMatch[1] : undefined
+export const handleGoogleOauth = async () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const code = urlParams.get("code")
+  const state = urlParams.get("state")
+  const paramsError = urlParams.get("error")
+  const storedState = localStorage.getItem("oauth_state");
+
+  if (code && state === storedState) {
+    const { data, error: loginError } = await loginOauth({ oauthCode: code })
+
+    loginError ?
+      console.log(loginError) :
+      hydrateClientState({
+        jwt: data.jwt,
+        username: data.username,
+        userId: data.userId
+      })
+
+  } else {
+    console.log(paramsError)
+  }
 }
 
 const hydrateClientStateClient = (queryClient: QueryClient) => ({

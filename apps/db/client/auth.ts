@@ -17,7 +17,7 @@ const createUserDb = (db: BunSQLiteDatabase) => async (email, username) =>
     return tx
       .select({
         user: {
-          userId: users.id,
+          id: users.id,
           username: users.username
         },
         emails

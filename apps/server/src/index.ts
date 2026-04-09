@@ -42,7 +42,6 @@ const app = new Elysia()
   .post('/user/login', login, loginShape)
   .get('/refresh', refreshGet, refreshGetShape)
 
-  .post('/user/oauth/register', oauthRegister, oauthRegisterShape)
   .post('/user/oauth/login', oauthLogin, oauthLoginShape)
 
   .post('/user/login/magic-link', magicLinkEmail, magicLinkEmailShape)

@@ -1,9 +1,8 @@
 import { t, status } from "elysia"
 import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, getUserByEmail, persistChallenge, createUser, updateEmailVerified } from "../../../db/client/auth"
 import { server } from '@passwordless-id/webauthn'
-import { createAndSaveMagicToken, createCredential, createJwts } from "../utils"
+import { createAndSaveMagicToken, createCredential, createJwts, getGoogleOauthTicket, googleCodeLogin } from "../utils"
 import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../../workers/src/client";
-import { OAuth2Client } from "google-auth-library"
 
 export const challenge = async ({ body: { challengeId } }) => {
   const challenge = server.randomChallenge()
@@ -25,7 +24,7 @@ export const register = async ({ refresh, access, cookie, body: { challengeId, e
 
   if (createdUser === undefined) { return status(500, "Could not register user") }
 
-  createCredential({ userId: createdUser.user.userId, challengeId, registration })
+  createCredential({ userId: createdUser.user.id, challengeId, registration })
 
   return createJwts(refresh, access, cookie['auth'], createdUser.user)
 }
@@ -163,13 +162,18 @@ export const verifyMagicLinkShape = {
   })
 }
 
-export const oauthLogin = async ({ refresh, access, cookie, body: { oauthAccessToken, email } }) => {
-  const isValid = await isValidGoogleOauth(oauthAccessToken)
-  console.log({ oauthAccessToken, isValid })
+export const oauthLogin = async ({ refresh, access, cookie, body: { oauthCode } }) => {
+  const { id_token: idToken } = await googleCodeLogin(oauthCode)
+  const res = await getGoogleOauthTicket(idToken)
 
-  const user = await getUserByEmail(email)
+  if (!res || (!res.email || !res.name)) { return status(400, "Oauth user does not exist") }
 
-  if (user === null) { return status(401, "User has not registered") }
+  const existingUser = await getUserByEmail(res.email)
+  const user = existingUser ?
+    existingUser :
+    (await createUser(res.email, res.name))?.user
+
+  if (user === undefined) { return status(500, "Could not find or register user") }
 
   return createJwts(refresh, access, cookie['auth'], user)
 }
@@ -179,39 +183,6 @@ export const oauthLoginShape = {
   access: t.String(),
   cookie: t.Object({}),
   body: t.Object({
-    oauthAccessToken: t.String(),
-    email: t.String(),
+    oauthCode: t.String(),
   })
-}
-export const oauthRegister = async ({ refresh, access, cookie, body: { oauthAccessToken, email, username } }) => {
-  const isValid = await isValidGoogleOauth(oauthAccessToken)
-  console.log({ oauthAccessToken, isValid })
-
-  const createdUser = await createUser(email, username)
-
-  if (createdUser === undefined) { return status(500, "Could not register user") }
-
-  return createJwts(refresh, access, cookie['auth'], createdUser.user)
-}
-
-export const oauthRegisterShape = {
-  refresh: t.String(),
-  access: t.String(),
-  cookie: t.Object({}),
-  body: t.Object({
-    oauthAccessToken: t.String(),
-    email: t.String(),
-    username: t.String(),
-  })
-}
-
-// I think we're supplying the wrong thing here
-const isValidGoogleOauth = async (oauthId) => {
-  const googleClient = new OAuth2Client(Bun.env.GOOGLE_OAUTH_CLIENT_ID!);
-  const ticket = await googleClient.verifyIdToken({
-    idToken: oauthId,
-    audience: Bun.env.GOOGLE_OAUTH_CLIENT_ID!,
-  });
-
-  return ticket ? true : false
 }

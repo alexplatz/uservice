@@ -153,14 +153,9 @@ const deleteSessionServer = (server: Server) => async (familyId: string) => {
   )
 }
 
-const loginOauthServer = (server: Server) => async ({ oauthAccessToken, email }: { oauthAccessToken: string, email: string }) =>
+const loginOauthServer = (server: Server) => async ({ oauthCode }: { oauthCode: string }) =>
   await withRefresh(async () =>
-    await server.user.oauth.login.post({ oauthAccessToken, email })
-  )
-
-const registerOauthServer = (server: Server) => async ({ oauthAccessToken, email, username }: { oauthAccessToken: string, email: string, username: string }) =>
-  await withRefresh(async () =>
-    await server.user.oauth.register.post({ oauthAccessToken, email, username })
+    await server.user.oauth.login.post({ oauthCode })
   )
 
 
@@ -194,7 +189,7 @@ export const [
   getEmails, createEmail, deleteEmail,
   createCredential, getCredentials, deleteCredential,
   getSessions, deleteSession,
-  loginOauth, registerOauth
+  loginOauth
 ] = [
     registerServer(server, client), loginServer(server, client), refreshServer(server),
     verifyEmailServer(server),
@@ -203,5 +198,5 @@ export const [
     getEmailsServer(server), createEmailServer(server), deleteEmailServer(server),
     createCredentialsServer(server, client), getCredentialsServer(server), deleteCredentialServer(server),
     getSessionsServer(server), deleteSessionServer(server),
-    loginOauthServer(server), registerOauthServer(server)
+    loginOauthServer(server)
   ]

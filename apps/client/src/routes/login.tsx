@@ -40,14 +40,27 @@ function Login() {
     }
   }
 
-
   const googleOauthLogin = () => {
-    const targetUrl = `https://accounts.google.com/o/oauth2/auth?redirect_uri=${encodeURIComponent(
-      window.location.origin
-    )}&response_type=token&client_id=${import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID!}&scope=openid%20email%20profile`;
+    const googleOauthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
 
-    // use tanstack here?
-    window.location.href = targetUrl;
+    // Function to generate the OAuth URL and redirect the user
+    const state = crypto.randomUUID(); // Generate a CSRF token
+    localStorage.setItem("oauth_state", state);
+
+    const params = new URLSearchParams({
+      client_id: import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID!,
+      redirect_uri: import.meta.env.VITE_CLIENT_URL!,
+      access_type: "offline",
+      response_type: "code",
+      state: state,
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+      ].join(" "),
+    })
+
+    const googleOauthConsentUrl = `${googleOauthUrl}?${params.toString()}`;
+    window.location.href = googleOauthConsentUrl;
   }
 
   return <div className="p-2">
