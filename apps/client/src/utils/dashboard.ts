@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query"
-import { loginOauth, refresh, registerOauth } from "../api/client"
+import { loginOauth, refresh } from "../api/client"
 import { queryClient } from "./query"
 
 export const isAuthed = async (jwt: string): Promise<boolean> =>
