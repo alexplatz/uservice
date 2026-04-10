@@ -1,7 +1,7 @@
 import { t, status } from "elysia"
-import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, persistChallenge, persistUser, updateEmailVerified } from "../../../db/client/auth"
+import { deleteChallenge, getChallenge, getCredentialWithUser, getMagicTokenDetails, getUserByEmail, persistChallenge, createUser, updateEmailVerified } from "../../../db/client/auth"
 import { server } from '@passwordless-id/webauthn'
-import { createAndSaveMagicToken, createCredential, createJwts } from "../utils"
+import { createAndSaveMagicToken, createCredential, createJwts, getGoogleOauthTicket, googleCodeLogin } from "../utils"
 import { enqueueVerificationEmail, enqueueMagicLinkEmail } from "../../../workers/src/client";
 
 export const challenge = async ({ body: { challengeId } }) => {
@@ -20,11 +20,13 @@ export const challengeShape = {
 }
 
 export const register = async ({ refresh, access, cookie, body: { challengeId, email, username, registration } }) => {
-  const [{ users: user }] = await persistUser(email, username)
+  const createdUser = await createUser(email, username)
 
-  createCredential({ userId: user.id, challengeId, registration })
+  if (createdUser === undefined) { return status(500, "Could not register user") }
 
-  return createJwts(refresh, access, cookie['auth'], user)
+  createCredential({ userId: createdUser.user.id, challengeId, registration })
+
+  return createJwts(refresh, access, cookie['auth'], createdUser.user)
 }
 
 export const registerShape = {
@@ -157,5 +159,30 @@ export const verifyMagicLinkShape = {
   cookie: t.Object({}),
   body: t.Object({
     token: t.String(),
+  })
+}
+
+export const oauthLogin = async ({ refresh, access, cookie, body: { oauthCode } }) => {
+  const { id_token: idToken } = await googleCodeLogin(oauthCode)
+  const res = await getGoogleOauthTicket(idToken)
+
+  if (!res || (!res.email || !res.name)) { return status(400, "Oauth user does not exist") }
+
+  const existingUser = await getUserByEmail(res.email)
+  const user = existingUser ?
+    existingUser :
+    (await createUser(res.email, res.name))?.user
+
+  if (user === undefined) { return status(500, "Could not find or register user") }
+
+  return createJwts(refresh, access, cookie['auth'], user)
+}
+
+export const oauthLoginShape = {
+  refresh: t.String(),
+  access: t.String(),
+  cookie: t.Object({}),
+  body: t.Object({
+    oauthCode: t.String(),
   })
 }
