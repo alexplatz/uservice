@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { asQuery, queryClient } from "@/utils/query";
+import { hydrateClientState } from "@/utils/dashboard";
 
 export const Route = createFileRoute('/login')({
   component: Login
@@ -23,10 +24,11 @@ function Login() {
       queryFn: () => asQuery(login)
     })
 
-    queryClient.setQueryData(['jwt'], data.jwt)
-    queryClient.setQueryData(['id'], data.userId)
-    queryClient.setQueryData(['username'], data.username)
-
+    hydrateClientState({
+      jwt: data.jwt,
+      username: data.username,
+      userId: data.userId
+    })
     navigate({ to: redirect })
   }
 
@@ -38,12 +40,37 @@ function Login() {
     }
   }
 
+  const googleOauthLogin = () => {
+    const googleOauthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+
+    // Function to generate the OAuth URL and redirect the user
+    const state = crypto.randomUUID(); // Generate a CSRF token
+    localStorage.setItem("oauth_state", state);
+
+    const params = new URLSearchParams({
+      client_id: import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID!,
+      redirect_uri: import.meta.env.VITE_CLIENT_URL!,
+      access_type: "offline",
+      response_type: "code",
+      state: state,
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+      ].join(" "),
+    })
+
+    const googleOauthConsentUrl = `${googleOauthUrl}?${params.toString()}`;
+    window.location.href = googleOauthConsentUrl;
+  }
+
   return <div className="p-2">
     <h3>Please login</h3>
     {error ? <p>{error}</p> : null}
     <Button onClick={passkeyLogin}>
       Passkey Login
     </Button>
+    <p>or</p>
+    <Button onClick={googleOauthLogin}>Login with Google</Button>
     <p>or</p>
     <Field>
       <FieldLabel htmlFor='email'>Email</FieldLabel>

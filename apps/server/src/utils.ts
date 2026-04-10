@@ -1,3 +1,4 @@
+import { OAuth2Client } from "google-auth-library";
 import { createMagicToken, deleteChallenge, getChallenge } from "../../db/client/auth"
 import { createUserCredential } from "../../db/client/credential";
 import { deleteUserSession, getUserSession, createUserSession, deleteStaleUserSession } from "../../db/client/session"
@@ -132,3 +133,29 @@ export const createCredential = async ({ userId, challengeId, registration }: { 
 
   return await createUserCredential(id, userId, publicKey, algorithm, transports)
 }
+
+export const googleCodeLogin = async (code: string) =>
+  await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      code,
+      client_id: Bun.env.GOOGLE_OAUTH_CLIENT_ID!,
+      client_secret: Bun.env.GOOGLE_OAUTH_SECRET!,
+      redirect_uri: Bun.env.CLIENT_URL!,
+      grant_type: "authorization_code",
+    }),
+  }).then((res) => res.json())
+
+const getGoogleOauthTicketClient = (googleClient: OAuth2Client) => async (idToken: string) =>
+  await googleClient.verifyIdToken({
+    idToken,
+    audience: Bun.env.GOOGLE_OAUTH_CLIENT_ID!,
+  }).then(res => res.getPayload())
+
+const googleOauthClient = new OAuth2Client(Bun.env.GOOGLE_OAUTH_CLIENT_ID!)
+
+export const getGoogleOauthTicket = getGoogleOauthTicketClient(googleOauthClient)
+

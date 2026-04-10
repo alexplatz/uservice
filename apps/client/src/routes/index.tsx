@@ -1,8 +1,5 @@
 import { magicLinkLogin } from "@/api/client";
-import { useAuthStore } from "@/store/auth";
-import { useUserStore } from "@/store/user";
-import type { emailData } from "@/types";
-import { queryClient } from "@/utils/query";
+import { handleGoogleOauth, hydrateClientState, isGoogleOauthRedirect } from "@/utils/dashboard";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -27,7 +24,7 @@ export const Route = createFileRoute('/')({
   component: Index,
   // convert to zod in the future
   validateSearch: (search: Record<string, unknown>): IndexSearch => ({
-    token: search?.token as string
+    token: search.token as string,
   }),
   beforeLoad: async ({ search: { token } }) => {
     if (token) {
@@ -36,33 +33,25 @@ export const Route = createFileRoute('/')({
       if (error) {
         console.log(error.message)
       } else {
-        const {
-          userId,
-          username,
-          jwt,
-          email
-        }: {
-          userId: string,
-          username: string,
-          jwt: string,
-          email: undefined | emailData
-        } = data
-
-        queryClient.setQueryData(['jwt'], jwt)
-        queryClient.setQueryData(['username'], username)
-        queryClient.setQueryData(['id'], userId)
-        queryClient.setQueryData(['emails'], email)
+        hydrateClientState({
+          jwt: data.jwt,
+          username: data.username,
+          userId: data.userId
+        })
+        // queryClient.setQueryData(['emails'], email)
 
         throw redirect({
           to: '/dashboard'
         })
       }
     }
+    if (isGoogleOauthRedirect()) {
+      handleGoogleOauth()
+
+      throw redirect({
+        to: '/dashboard'
+      })
+    }
   }
 })
 
-const updateVerifiedCache = (emails: emailData[], verifiedEmail: undefined | emailData) =>
-  verifiedEmail ? [
-    ...emails.filter(email => email.email !== verifiedEmail.email),
-    verifiedEmail
-  ] : emails
