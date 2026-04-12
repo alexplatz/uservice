@@ -3,7 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="assets/manifest.json">
     <link href="/src/styles.css" rel="stylesheet">
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("assets/service-worker.js");
+      }
+    </script>
     <title>Webapp Template</title>
     <!-- <script type="module" src="/src/utils/mobileDebug.ts"></script> -->
   </head>
