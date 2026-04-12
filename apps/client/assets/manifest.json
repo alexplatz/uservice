@@ -2,7 +2,7 @@
   "name": "Template App",
   "short_name": "Template App",
   "start_url": "/",
-  "scope": "./",
+  "scope": "../",
   "icons": [
     {
       "src": "template-image.png",
@@ -15,9 +15,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#ffd31d",
+  "theme_color": "#7eeffe",
   "background_color": "#333",
   "display": "standalone"
 }
-
-
