@@ -17,7 +17,7 @@ await configure({
       lowestLevel: isDevelopment ? 'trace' : 'info',
       // odd formatting for symmetry across monorepo
       // in a real app, we'd log to console in dev and remote file in prod
-      sinks: isDevelopment ? ['console', 'console'] : ['console'],
+      sinks: isDevelopment ? ['console'] : ['console'],
     },
     { category: ['logtape', 'meta'], sinks: ['console'], lowestLevel: 'warning' }
   ],

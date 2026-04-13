@@ -30,7 +30,7 @@ export const Route = createFileRoute('/dashboard/account/emails')({
   }
 })
 
-const logger = getLogger(["template-app", "dashboard-utils"])
+const logger = getLogger(["template-client", "dashboard-utils"])
 
 const EmailsTable = ({ emails }: { emails: emailData[] }) => {
   const userId = queryClient.getQueryData(['id'])
