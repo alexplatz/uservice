@@ -4,6 +4,26 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { StrictMode } from 'react'
 import { routeTree } from './routeTree.gen'
 import { queryClient } from '@/utils/query'
+import { configure, getConsoleSink } from '@logtape/logtape'
+
+const isDevelopment = process.env.NODE_ENV === 'development'
+
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+    // file: getFileSink(isDevelopment ? 'dev.log' : 'prod.log'),
+  },
+  loggers: [
+    {
+      category: 'template-client',
+      lowestLevel: isDevelopment ? 'trace' : 'info',
+      // odd formatting for symmetry across monorepo
+      // in a real app, we'd log to console in dev and remote file in prod
+      sinks: isDevelopment ? ['console'] : ['console'],
+    },
+    { category: ['logtape', 'meta'], sinks: ['console'], lowestLevel: 'warning' }
+  ],
+})
 
 const router = createRouter({
   routeTree,

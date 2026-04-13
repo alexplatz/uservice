@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { loginOauth, refresh } from "../api/client"
 import { queryClient } from "./query"
+import { getLogger } from "@logtape/logtape"
 
 export const isAuthed = async (jwt: string): Promise<boolean> =>
   isExpired(jwt) ?
@@ -35,12 +36,14 @@ export const handleGoogleOauth = async () => {
   const state = urlParams.get("state")
   const paramsError = urlParams.get("error")
   const storedState = localStorage.getItem("oauth_state");
+  const logger = getLogger(["template-client", "dashboard-utils"]);
+
 
   if (code && state === storedState) {
     const { data, error: loginError } = await loginOauth({ oauthCode: code })
 
     loginError ?
-      console.log(loginError) :
+      logger.error`${loginError}` :
       hydrateClientState({
         jwt: data.jwt,
         username: data.username,
@@ -48,7 +51,7 @@ export const handleGoogleOauth = async () => {
       })
 
   } else {
-    console.log(paramsError)
+    logger.error`${paramsError}`
   }
 }
 

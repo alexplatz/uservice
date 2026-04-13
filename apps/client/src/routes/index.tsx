@@ -1,5 +1,6 @@
 import { magicLinkLogin } from "@/api/client";
 import { handleGoogleOauth, hydrateClientState, isGoogleOauthRedirect } from "@/utils/dashboard";
+import { getLogger } from "@logtape/logtape";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -27,11 +28,14 @@ export const Route = createFileRoute('/')({
     token: search.token as string,
   }),
   beforeLoad: async ({ search: { token } }) => {
+    const logger = getLogger(["template-client", "index"]);
+
     if (token) {
       const { data, error } = await magicLinkLogin(token)
 
+
       if (error) {
-        console.log(error.message)
+        logger.error`${error.message}`
       } else {
         hydrateClientState({
           jwt: data.jwt,

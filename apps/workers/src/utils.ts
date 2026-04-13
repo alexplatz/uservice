@@ -1,3 +1,4 @@
+import { getLogger } from "@logtape/logtape";
 import { Job } from "bunqueue/client";
 import * as nodemailer from 'nodemailer'
 import SMTPTransport from "nodemailer/lib/smtp-transport";
@@ -39,13 +40,15 @@ const sendMagicLinkEmail = sendEmailFn('One time login link')
 
 /***** Generic job processors *****/
 const processJobFn = (processFn: emailProcessFn) => async (job: Job<EmailJob>) => {
-  console.log(`🞷 Processing job ${job.data.id} ...`)
+  const logger = getLogger(["template-workers", "utils"])
+
+  logger.info`🞷 Processing job ${job.data.id} ...`
 
   try {
     await processFn(job)
   } catch (e) {
     // need logging
-    console.log(e)
+    logger.error`${e}`
     throw (e)
   }
 
