@@ -3,6 +3,8 @@
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.1.10",
     "@elysiajs/cors": "^1.4.1",
+    "@logtape/file": "^2.0.5",
+    "@logtape/logtape": "^2.0.5",
     "@react-email/components": "1.0.7",
     "bunqueue": "^2.6.9",
     "drizzle-orm": "^0.45.1",

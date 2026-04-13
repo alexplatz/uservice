@@ -7,13 +7,16 @@ import { randomUUIDv7 } from 'bun'
 import { EmailJob } from './utils'
 import VerificationLinkEmail from './emails/verificationLink'
 import MagicLinkEmail from './emails/magicLink'
+import { getLogger } from '@logtape/logtape'
 
 // const otp = ~~(Math.random() * (900_000 - 1)) + 100_000
 
 /****** Generic email enqueue function for reusability ******/
 const emailsEnqueue = async (queue: Queue<EmailJob>, to: string, html: string) => {
   const id = randomUUIDv7()
-  console.log(`enqueing job ${id}`)
+  const logger = getLogger(["template-workers", "posts"])
+
+  logger.info`enqueing job ${id}`
 
   await queue.add('email', {
     id,

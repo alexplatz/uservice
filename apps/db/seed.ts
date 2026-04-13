@@ -1,5 +1,28 @@
+import { configure, getConsoleSink, getLogger } from "@logtape/logtape";
 import { db } from "./db";
 import { users, emails, credentials } from "./schema";
+
+// if db is switched from embedded,
+// delete this config and import from index
+const isDevelopment = process.env.NODE_ENV === 'development'
+
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+    // file: getFileSink(isDevelopment ? 'dev.log' : 'prod.log'),
+  },
+  loggers: [
+    {
+      category: 'template-db',
+      lowestLevel: isDevelopment ? 'trace' : 'info',
+      // odd formatting for symmetry across monorepo
+      // in a real app, we'd log to console in dev and remote file in prod
+      sinks: isDevelopment ? ['console'] : ['console'],
+    },
+    { category: ['logtape', 'meta'], sinks: ['console'], lowestLevel: 'warning' }
+  ],
+})
+const logger = getLogger(["template-db", "seed"]);
 
 const [userResult] = await db.insert(users).values([
   {
@@ -25,4 +48,8 @@ const credentialResult = await db.insert(credentials).values([
   }
 ]).returning()
 
-console.log('seeded db with: ', { userResult, emailResult, credentialResult })
+logger.info('seeded db with: {*}', {
+  userResult,
+  emailResult,
+  credentialResult
+})
