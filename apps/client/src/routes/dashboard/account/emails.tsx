@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { asQuery, mutate, queryClient } from "@/utils/query";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getLogger } from "@logtape/logtape";
 
 export const Route = createFileRoute('/dashboard/account/emails')({
   component: () => {
@@ -28,6 +29,8 @@ export const Route = createFileRoute('/dashboard/account/emails')({
     }</>
   }
 })
+
+const logger = getLogger(["template-app", "dashboard-utils"])
 
 const EmailsTable = ({ emails }: { emails: emailData[] }) => {
   const userId = queryClient.getQueryData(['id'])
@@ -60,12 +63,12 @@ const EmailsTable = ({ emails }: { emails: emailData[] }) => {
               isPrimary ?
                 <p>✅</p> :
                 <Button
-                  onClick={() => console.log('TODO')}>
+                  onClick={() => logger.info`TODO`}>
                   Make Primary
                 </Button>
             }</TableCell>
             <TableCell className="flex justify-between w-[5rem]">
-              <SquarePenIcon onClick={() => console.log('edit')} />
+              <SquarePenIcon onClick={() => logger.info`edit`} />
               <Trash2Icon onClick={() => mutateEmailsDelete(id)} />
             </TableCell>
           </TableRow>

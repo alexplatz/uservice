@@ -1,4 +1,7 @@
+import { getLogger } from "@logtape/logtape";
 import { QueryClient } from "@tanstack/react-query"
+
+const logger = getLogger(["template-client", "query-utils"]);
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,7 +16,7 @@ export const asQuery = async (fn, args?) => {
   const { data, error } = await fn(args)
 
   // probably set global error state
-  if (error) { console.log(error) }
+  if (error) { logger.error`${error}` }
 
   return data
 }
@@ -24,10 +27,10 @@ export const mutate = async ({ queryFn, params, queryKey, handler, onSuccess }: 
     await queryFn()
 
   if (error) {
-    console.log({
+    logger.error`${{
       status: error.status,
       message: error.value.summary
-    })
+    }}`
   } else {
     queryKey ?
       handler ? queryClient.setQueryData(queryKey, handler) :

@@ -8,9 +8,30 @@ import { createUserCredentialPost, createUserCredentialShape, deleteUserCredenti
 import { deleteUserSessionPost, deleteUserSessionShape, getAllUserSessionsPost, getAllUserSessionsShape } from './posts/session'
 import { logoutGet, logoutGetShape, refreshGet, refreshGetShape } from './gets'
 import { guardJwts } from './guards'
+import { configure, getConsoleSink, getLogger } from '@logtape/logtape'
 
 // import { logger } from '@bogeychan/elysia-logger'
 
+const isDevelopment = process.env.NODE_ENV === 'development'
+
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+    // file: getFileSink(isDevelopment ? 'dev.log' : 'prod.log'),
+  },
+  loggers: [
+    {
+      category: 'template-api',
+      lowestLevel: isDevelopment ? 'trace' : 'info',
+      // odd formatting for symmetry across monorepo
+      // in a real app, we'd log to console in dev and remote file in prod
+      sinks: isDevelopment ? ['console', 'console'] : ['console'],
+    },
+    { category: ['logtape', 'meta'], sinks: ['console'], lowestLevel: 'warning' }
+  ],
+})
+
+const logger = getLogger(["template-api", "index"]);
 
 const app = new Elysia()
   // .use(logger())
@@ -70,6 +91,6 @@ const app = new Elysia()
 
   .listen(Bun.env.SERVER_PORT! || 8001)
 
-console.log(`server started on ${Bun.env.SERVER_URL!}!`)
+logger.info`server started on ${Bun.env.SERVER_URL!}!`
 
 export type App = typeof app
