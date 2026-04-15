@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query"
-import { loginOauth, refresh } from "../api/client"
+import { loginOauth, magicLinkLogin, refresh } from "../api/client"
 import { queryClient } from "./query"
 import { getLogger } from "@logtape/logtape"
 
@@ -25,6 +25,22 @@ const expiry = (jwt: string): number | undefined =>
     JSON.parse(window.atob(jwt.split('.')[1]))?.exp :
     undefined
 
+export const handleToken = async (token: string) => {
+  const logger = getLogger(["template-client", "index"]);
+  const { data, error } = await magicLinkLogin(token)
+
+
+  if (error) {
+    logger.error`${error.message}`
+  } else {
+    hydrateClientState({
+      jwt: data.jwt,
+      username: data.username,
+      userId: data.userId
+    })
+    // queryClient.setQueryData(['emails'], email)
+  }
+}
 
 export const isGoogleOauthRedirect = () =>
   new URLSearchParams(window.location.search)

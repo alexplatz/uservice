@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useAuthStore } from "../store/auth";
-import { useUserStore } from "../store/user";
 import { useState } from "react";
 import { register } from "../api/client";
 import type { RegisterUser } from "../types";
 import { asQuery, queryClient } from "@/utils/query";
+import { hydrateClientState } from "@/utils/dashboard";
 
 export const Route = createFileRoute('/register')({
   component: Register
@@ -22,9 +21,11 @@ function Register() {
       queryFn: () => asQuery(async () => await register(inputtedUser))
     })
 
-    queryClient.setQueryData(['jwt'], data.jwt)
-    queryClient.setQueryData(['id'], data.userId)
-    queryClient.setQueryData(['username'], data.username)
+    hydrateClientState({
+      jwt: data.jwt,
+      username: data.username,
+      userId: data.userId
+    })
 
     navigate({ to: '/dashboard' })
   }
