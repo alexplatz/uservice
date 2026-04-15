@@ -1,6 +1,4 @@
-import { magicLinkLogin } from "@/api/client";
-import { handleGoogleOauth, hydrateClientState, isGoogleOauthRedirect } from "@/utils/dashboard";
-import { getLogger } from "@logtape/logtape";
+import { handleGoogleOauth, handleToken, isGoogleOauthRedirect } from "@/utils/dashboard";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -28,26 +26,13 @@ export const Route = createFileRoute('/')({
     token: search.token as string,
   }),
   beforeLoad: async ({ search: { token } }) => {
-    const logger = getLogger(["template-client", "index"]);
 
     if (token) {
-      const { data, error } = await magicLinkLogin(token)
+      handleToken(token)
 
-
-      if (error) {
-        logger.error`${error.message}`
-      } else {
-        hydrateClientState({
-          jwt: data.jwt,
-          username: data.username,
-          userId: data.userId
-        })
-        // queryClient.setQueryData(['emails'], email)
-
-        throw redirect({
-          to: '/dashboard'
-        })
-      }
+      throw redirect({
+        to: '/dashboard'
+      })
     }
     if (isGoogleOauthRedirect()) {
       handleGoogleOauth()
