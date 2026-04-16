@@ -8,13 +8,13 @@ interface RouterContext {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: () =>
-    <>
+    <div className='flex content-center min-w-screen min-h-screen'>
       <Outlet />
       {
         process.env.NODE_ENV === 'development' ?
           <TanStackRouterDevtools position="bottom-right" /> :
           null
       }
-    </>
+    </div>
 })
 

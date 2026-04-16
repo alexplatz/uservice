@@ -10,10 +10,9 @@ export const Route = createFileRoute('/dashboard/account')({
     const username = queryClient.getQueryData(['username'])
 
     return <>
-        <div>
+      <div className="min-w-[calc(100vw-4rem)] content-center">
+        <div className="flex justify-between">
           <h1>{username as string} account settings</h1>
-          <hr />
-          <Outlet />
           <Button onClick={async () => {
             await logout()
             queryClient.setQueryData(['jwt'], '')
@@ -22,6 +21,9 @@ export const Route = createFileRoute('/dashboard/account')({
             })
           }}>Logout</Button>
         </div>
+        <hr />
+        <Outlet />
+      </div>
     </>
   }
 })
