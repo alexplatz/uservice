@@ -66,7 +66,8 @@ function Login() {
   }
 
   return <>
-    <div className="flex flex-col justify-center m-auto h-screen">
+    <div className="flex flex-col justify-center m-auto h-screen w-[16rem]">
+      <h3 className="text-2xl italic mb-2">Login</h3>
       {error ? <p>{error}</p> : null}
       <Field>
         <FieldLabel htmlFor='email'>Email</FieldLabel>
