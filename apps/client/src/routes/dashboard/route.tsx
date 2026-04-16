@@ -1,5 +1,4 @@
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarProvider, SidebarRail } from "@/components/ui/sidebar";
 import { ClockFadingIcon, House, KeyRound, Mail } from "lucide-react";
 import { isAuthed } from "@/utils/dashboard";
 import { queryClient } from "@/utils/query";
@@ -18,38 +17,33 @@ export const Route = createFileRoute('/dashboard')({
     }
   },
   component: () => <>
-    <SidebarProvider defaultOpen={false}>
-      <NavSidebar />
-      <Outlet />
-    </SidebarProvider>
+    <NavSidebar />
+    <Outlet />
   </>
 })
 
 const NavSidebar = () =>
-  <Sidebar collapsible="icon">
-    <SidebarContent>
-      <SidebarGroup>
-        <Link
-          to={'/dashboard/account'}
-          preload={'intent'}>
-          <House />
-        </Link>
-        <Link
-          to={'/dashboard/account/emails'}
-          preload={'intent'}>
-          <Mail />
-        </Link>
-        <Link
-          to={'/dashboard/account/passkeys'}
-          preload={'intent'}>
-          <KeyRound />
-        </Link>
-        <Link
-          to={'/dashboard/account/sessions'}
-          preload={'intent'}>
-          <ClockFadingIcon />
-        </Link>
-      </SidebarGroup>
-      <SidebarRail className="w-1-rem hover:bg-sidebar-accent transition-colors" />
-    </SidebarContent>
-  </Sidebar>
+  <nav className="min-h-screen border-r-1">
+    <div className="w-[45px] flex flex-col items-center gap-y-2 mt-2">
+      <Link
+        to={'/dashboard/account'}
+        preload={'intent'}>
+        <House />
+      </Link>
+      <Link
+        to={'/dashboard/account/emails'}
+        preload={'intent'}>
+        <Mail />
+      </Link>
+      <Link
+        to={'/dashboard/account/passkeys'}
+        preload={'intent'}>
+        <KeyRound />
+      </Link>
+      <Link
+        to={'/dashboard/account/sessions'}
+        preload={'intent'}>
+        <ClockFadingIcon />
+      </Link>
+    </div>
+  </nav>

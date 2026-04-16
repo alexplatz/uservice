@@ -44,7 +44,6 @@ const PasskeysTable = ({ passkeys }: { passkeys: passkeyData[] }) => {
 
   return <>
     <Table>
-      <TableCaption>Your Passkeys</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>Public Key</TableHead>

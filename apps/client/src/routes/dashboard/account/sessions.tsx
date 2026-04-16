@@ -29,7 +29,6 @@ export const Route = createFileRoute('/dashboard/account/sessions')({
 const SessionsTable = ({ sessions }: { sessions: sessionData[] }) =>
   <>
     <Table>
-      <TableCaption>Your Sessions</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>Family ID</TableHead>
