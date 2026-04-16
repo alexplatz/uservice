@@ -27,7 +27,7 @@ function Register() {
       userId: data.userId
     })
 
-    navigate({ to: '/dashboard' })
+    navigate({ to: '/dashboard/account' })
   }
 
 
