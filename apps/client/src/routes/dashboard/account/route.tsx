@@ -1,6 +1,4 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarProvider, SidebarRail } from "@/components/ui/sidebar";
-import { ClockFadingIcon, KeyRound, Mail } from "lucide-react";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/api/client";
 import { queryClient } from "@/utils/query";
@@ -9,14 +7,19 @@ export const Route = createFileRoute('/dashboard/account')({
   beforeLoad: async () => { },
   component: () => {
     const navigate = Route.useNavigate()
+    const location = useLocation({
+      select: location => location.pathname
+    })
+      .split('/')
+      .pop()
     const username = queryClient.getQueryData(['username'])
 
+    const title = `${username} ${location === 'account' ? 'account settings' : location}`
+
     return <>
-      <SidebarProvider defaultOpen={false} offsetTop={40}>
-        <AccountSidebar />
-        <div>
-          <h1>{username as string} account settings</h1>
-          <Outlet />
+      <div className="w-[calc(100vw-45px)]">
+        <div className="flex justify-between justify-items-center">
+          <h1 className="text-4xl italic">{title}</h1>
           <Button onClick={async () => {
             await logout()
             queryClient.setQueryData(['jwt'], '')
@@ -25,32 +28,12 @@ export const Route = createFileRoute('/dashboard/account')({
             })
           }}>Logout</Button>
         </div>
-      </SidebarProvider>
+        <hr className="mb-4" />
+        {location === 'account' ? <p>try tapping on an item in the navbar...</p> : null}
+        <Outlet />
+      </div>
     </>
   }
 })
 
 
-const AccountSidebar = () =>
-  <Sidebar collapsible="icon">
-    <SidebarContent>
-      <SidebarGroup>
-        <Link
-          to={'/dashboard/account/emails'}
-          preload={'intent'}>
-          <Mail />
-        </Link>
-        <Link
-          to={'/dashboard/account/passkeys'}
-          preload={'intent'}>
-          <KeyRound />
-        </Link>
-        <Link
-          to={'/dashboard/account/sessions'}
-          preload={'intent'}>
-          <ClockFadingIcon />
-        </Link>
-      </SidebarGroup>
-      <SidebarRail className="w-1-rem hover:bg-sidebar-accent transition-colors" />
-    </SidebarContent>
-  </Sidebar>

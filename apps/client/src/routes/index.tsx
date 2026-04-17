@@ -26,19 +26,22 @@ export const Route = createFileRoute('/')({
     token: search.token as string,
   }),
   beforeLoad: async ({ search: { token } }) => {
-
     if (token) {
       handleToken(token)
 
       throw redirect({
-        to: '/dashboard'
+        to: '/dashboard/account'
       })
     }
-    if (isGoogleOauthRedirect()) {
+    else if (isGoogleOauthRedirect()) {
       handleGoogleOauth()
 
       throw redirect({
-        to: '/dashboard'
+        to: '/dashboard/account'
+      })
+    } else {
+      throw redirect({
+        to: '/login'
       })
     }
   }

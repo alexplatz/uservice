@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button"
 import { createEmail, deleteEmail, getEmails, verifyEmail } from "@/api/client";
 import type { emailData } from "@/types";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SquarePenIcon, Trash2Icon } from "lucide-react";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,6 @@ const EmailsTable = ({ emails }: { emails: emailData[] }) => {
 
   return <>
     <Table>
-      <TableCaption>Your emails</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>Email</TableHead>
@@ -75,16 +74,18 @@ const EmailsTable = ({ emails }: { emails: emailData[] }) => {
         ))}
       </TableBody>
     </Table>
-    <Field>
-      <FieldLabel htmlFor='email'>New Email</FieldLabel>
-      <Input
-        id='email'
-        type='text'
-        placeholder='me@example.com'
-        onBlur={(e) => setNewEmail(e.target.value)}
-      />
-    </Field>
-    <Button onClick={() => mutateEmailsCreate({ userId, email: newEmail })}>Add</Button>
+    <div className="flex justify-between max-w-100">
+      <Field className="max-w-85">
+        <Input
+          id='email'
+          type='text'
+          placeholder='me@example.com'
+          onBlur={(e) => setNewEmail(e.target.value)}
+        />
+        <FieldLabel htmlFor='email'>New Email</FieldLabel>
+      </Field>
+      <Button onClick={() => mutateEmailsCreate({ userId, email: newEmail })}>Add</Button>
+    </div>
   </>
 }
 

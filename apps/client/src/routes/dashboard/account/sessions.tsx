@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import type { sessionData } from "@/types";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteSession, getSessions } from "@/api/client";
 import { useState } from "react";
 import { DeleteAlert } from './-utils'
 import { asQuery, mutate } from "@/utils/query";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 
 export const Route = createFileRoute('/dashboard/account/sessions')({
   component: () => {
@@ -29,7 +30,6 @@ export const Route = createFileRoute('/dashboard/account/sessions')({
 const SessionsTable = ({ sessions }: { sessions: sessionData[] }) =>
   <>
     <Table>
-      <TableCaption>Your Sessions</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>Family ID</TableHead>
@@ -45,6 +45,7 @@ const SessionsTable = ({ sessions }: { sessions: sessionData[] }) =>
 
 const SessionRow = ({ familyId, lastUsed }: { familyId: string, lastUsed: string }) => {
   const [alertOpen, setAlertOpen] = useState(false)
+
   return <>
     <TableRow key={familyId}>
       <TableCell>{familyId}</TableCell>
