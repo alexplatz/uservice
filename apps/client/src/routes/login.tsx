@@ -29,7 +29,8 @@ function Login() {
       username: data.username,
       userId: data.userId
     })
-    navigate({ to: redirect })
+
+    navigate({ to: redirect || '/dashboard/account' })
   }
 
   const emailLogin = async (email: string) => {
@@ -63,31 +64,31 @@ function Login() {
     window.location.href = googleOauthConsentUrl;
   }
 
-  return <div className="p-2">
-    <h3>Please login</h3>
-    {error ? <p>{error}</p> : null}
-    <Button onClick={passkeyLogin}>
-      Passkey Login
-    </Button>
-    <p>or</p>
-    <Button onClick={googleOauthLogin}>Login with Google</Button>
-    <p>or</p>
-    <Field>
-      <FieldLabel htmlFor='email'>Email</FieldLabel>
-      <Input
-        id='email'
-        type='text'
-        placeholder='Enter your email'
-        onBlur={(e) => setEmail(e.target.value)}
-      />
-      <FieldDescription>
-        We'll send a link to your email if it exists
-      </FieldDescription>
-      <Button onClick={() => emailLogin(email)}>
-        Email Login
+  return <>
+    <div className="flex flex-col justify-center m-auto h-screen w-[16rem]">
+      <h3 className="text-2xl italic mb-2">Login</h3>
+      {error ? <p>{error}</p> : null}
+      <Field>
+        <FieldLabel htmlFor='email'>Email</FieldLabel>
+        <Input
+          id='email'
+          type='text'
+          placeholder='Enter your email'
+          onBlur={(e) => setEmail(e.target.value)}
+        />
+        <FieldDescription>
+          We'll send a link to your email if it exists
+        </FieldDescription>
+        <Button onClick={() => emailLogin(email)}>
+          Email Login
+        </Button>
+      </Field>
+      <Button onClick={passkeyLogin}>
+        Passkey Login
       </Button>
-    </Field>
-    <p>Haven't joined yet? <Link to='/register'>Sign up!</Link></p>
-  </div>
+      <Button onClick={googleOauthLogin}>Google Login</Button>
+      <p>Haven't joined yet? <Link to='/register'>Sign up!</Link></p>
+    </div>
+  </>
 }
 

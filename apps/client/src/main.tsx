@@ -6,7 +6,7 @@ import { routeTree } from './routeTree.gen'
 import { queryClient } from '@/utils/query'
 import { configure, getConsoleSink } from '@logtape/logtape'
 
-const isDevelopment = process.env.NODE_ENV === 'development'
+const isDevelopment = import.meta.env.VITE_ENV === 'development'
 
 await configure({
   sinks: {
