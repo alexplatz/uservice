@@ -29,9 +29,8 @@ function Login() {
       username: data.username,
       userId: data.userId
     })
-    redirect ?
-      navigate({ to: redirect }) :
-      navigate({ to: '/dashboard/account' })
+
+    navigate({ to: redirect || '/dashboard/account' })
   }
 
   const emailLogin = async (email: string) => {

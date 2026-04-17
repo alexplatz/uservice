@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button"
 import { createCredential, deleteCredential, getCredentials, getEmails } from "@/api/client";
 import type { emailData, passkeyData } from "@/types";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash2Icon } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { asQuery, mutate } from "@/utils/query";

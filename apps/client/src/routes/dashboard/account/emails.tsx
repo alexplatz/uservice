@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button"
 import { createEmail, deleteEmail, getEmails, verifyEmail } from "@/api/client";
 import type { emailData } from "@/types";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SquarePenIcon, Trash2Icon } from "lucide-react";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
