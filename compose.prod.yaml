@@ -17,24 +17,9 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: ./infra/Dockerfile.api
-    image: localhost/api:0.0.1
-    ports:
-    - "8001:8001"
+      target: production
     volumes: 
       - ./apps/db/data:/apps/db/data
-    develop:
-      watch:
-        - path: ./apps/server/src
-          action: sync
-          target: /apps/server/src
-        - path: ./apps/server/package.json
-          action: rebuild
-    env_file:
-      - ./apps/server/.env
-    network_mode: host
-
 
 
   client-reverse-proxy:
