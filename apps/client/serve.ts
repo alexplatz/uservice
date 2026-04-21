@@ -1,5 +1,8 @@
+/* server for serving production payloads */
+/* make sure port matches app port */
+/* payloads configured before server, so no env vars */
+
 const server = Bun.serve({
-  // port: Bun.env.VITE_CLIENT_URL!,
   port: 3001,
   fetch: async (req) => {
     const url = new URL(req.url)
