@@ -1,0 +1,14 @@
+services:
+  api:
+    build:
+      target: production
+    volumes: 
+      - ./apps/db/data:/apps/db/data
+
+  client:
+    build:
+      target: production
+
+  workers:
+    build:
+      target: production

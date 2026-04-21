@@ -8,6 +8,7 @@ import { createUserCredentialPost, createUserCredentialShape, deleteUserCredenti
 import { deleteUserSessionPost, deleteUserSessionShape, getAllUserSessionsPost, getAllUserSessionsShape } from './posts/session'
 import { logoutGet, logoutGetShape, refreshGet, refreshGetShape } from './gets'
 import { guardJwts } from './guards'
+import { rateLimit } from 'elysia-rate-limit'
 import { configure, getConsoleSink, getLogger } from '@logtape/logtape'
 
 // import { logger } from '@bogeychan/elysia-logger'
@@ -35,6 +36,9 @@ const logger = getLogger(["template-api", "index"]);
 
 const app = new Elysia()
   // .use(logger())
+  .use(rateLimit({
+    max: 100
+  }))
   .use(cors({
     // switch to '*' for local testing
     origin: [`${Bun.env.CLIENT_URL!}`],

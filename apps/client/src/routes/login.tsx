@@ -24,13 +24,15 @@ function Login() {
       queryFn: () => asQuery(login)
     })
 
-    hydrateClientState({
-      jwt: data.jwt,
-      username: data.username,
-      userId: data.userId
-    })
+    if (data?.jwt) {
+      hydrateClientState({
+        jwt: data.jwt,
+        username: data.username,
+        userId: data.userId
+      })
 
-    navigate({ to: redirect || '/dashboard/account' })
+      navigate({ to: redirect || '/dashboard/account' })
+    }
   }
 
   const emailLogin = async (email: string) => {
