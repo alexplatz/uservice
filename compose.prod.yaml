@@ -1,84 +1,14 @@
 services:
-  api-reverse-proxy:
-    image: caddy:2.11.1
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-      - "8001:8001"
-    volumes:
-      - ./infra/api-reverse-proxy/conf:/etc/caddy
-      - caddy_data:/data
-      - caddy_config:/config
-    env_file:
-      - ./apps/server/.env
-    network_mode: host
-
   api:
     build:
       target: production
     volumes: 
       - ./apps/db/data:/apps/db/data
 
-
-  client-reverse-proxy:
-    image: caddy:2.11.1
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-      - "3001:3001"
-    volumes:
-      - ./infra/client-reverse-proxy/conf:/etc/caddy
-      - caddy_data:/data
-      - caddy_config:/config
-    env_file:
-      - ./apps/client/.env
-    network_mode: host
-
   client:
     build:
-      context: .
-      dockerfile: ./infra/Dockerfile.client
-    image: localhost/client:0.0.1
-    ports:
-    - "3001:3001"
-    develop:
-      watch:
-        - path: ./apps/client/src
-          action: sync
-          target: /apps/client/src
-        - path: ./apps/client/package.json
-          action: rebuild
-    command: bun run start
-    network_mode: host
-
-
-  
-  workers-reverse-proxy:
-    image: caddy:2.11.1
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-      - "8002:8002"
-    volumes:
-      - ./infra/workers-reverse-proxy/conf:/etc/caddy
-      - caddy_data:/data
-      - caddy_config:/config
-    env_file:
-      - ./apps/workers/.env
-    network_mode: host
+      target: production
 
   workers:
     build:
       target: production
-
-
-
-volumes:
-  caddy_data:
-  caddy_config:
