@@ -16,4 +16,4 @@ to setup the db:
   bun run seed.ts
 ```
 to run the suite:
-`podman compose up [service]`
+`podman compose -f compose.yaml -f compose.<env>.yaml up [service]`
