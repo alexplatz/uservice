@@ -104,7 +104,6 @@ services:
           target: /apps/workers/src
         - path: ./apps/workers/package.json
           action: rebuild
-    command: bun run start
     network_mode: host
 
 

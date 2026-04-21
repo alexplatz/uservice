@@ -1,14 +1,43 @@
-FROM oven/bun:1.3 
-WORKDIR /apps
-
-COPY apps ./
-
+FROM oven/bun:1.3 AS base
+# ideally, these clients would be packages
+# keeping structure for future expansion
+WORKDIR /apps/db
+COPY apps/db/package*.json ./
 WORKDIR /apps/workers
+COPY apps/workers/package*.json ./
 
-RUN bun install --verbose --frozen-lockfile
 
-EXPOSE 8002
+FROM base AS development
+##### DB client
+COPY apps/db /apps/db
+WORKDIR /apps/db
+# ADD apps/db/setup.sh ./
+RUN bun install --frozen-lockfile
+##### workers client
+COPY apps/workers /apps/workers
+WORKDIR /apps/workers
+RUN bun install --frozen-lockfile
+# USER bun
+CMD [ "bun", "run", "dev" ]
 
-USER bun
-CMD [ "bun", "run", "start" ]
 
+FROM base AS builder
+##### DB client
+COPY apps/db /apps/db
+WORKDIR /apps/db
+# ADD apps/db/setup.sh ./
+RUN bun install --frozen-lockfile
+##### workers client
+COPY apps/workers /apps/workers
+WORKDIR /apps/workers
+RUN bun install --frozen-lockfile
+# Run tests here
+RUN bun run build
+
+
+FROM debian:stable-slim AS production
+WORKDIR /apps/server
+COPY --from=builder /apps/workers/workers ./
+COPY --from=builder /apps/workers/package.json ./
+# Run tests here
+CMD ["./workers"]

@@ -75,22 +75,7 @@ services:
 
   workers:
     build:
-      context: .
-      dockerfile: ./infra/Dockerfile.workers
-    image: localhost/workers:0.0.1
-    ports:
-    - "8002:8002"
-    env_file:
-      - ./apps/workers/.env
-    develop:
-      watch:
-        - path: ./apps/workers/src
-          action: sync
-          target: /apps/workers/src
-        - path: ./apps/workers/package.json
-          action: rebuild
-    command: bun run start
-    network_mode: host
+      target: development
 
 
 
