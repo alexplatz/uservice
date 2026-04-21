@@ -1,16 +1,32 @@
-FROM oven/bun:1.3 
-WORKDIR /apps
-
-COPY apps ./
-
+FROM oven/bun:1.3 AS base
+# ideally, these clients would be packages
+# keeping structure for future expansion
 WORKDIR /apps/client
+COPY apps/client/package*.json ./
 
-RUN bun install --frozen-lockfile
-# RUN mkdir -p node_modules/.vite && chown -R bun:bun node_modules/.vite
-# RUN mkdir -p .tanstack && chown -R bun:bun .tanstack
 
-EXPOSE 8001
-
+FROM base AS development
+COPY apps/client /apps/client
+WORKDIR /apps/client
 # USER bun
-CMD [ "bun", "run", "start" ]
+CMD [ "bun", "run", "dev" ]
+
+
+FROM base AS builder
+COPY apps/client /apps/client
+WORKDIR /apps/client
+RUN bun install --frozen-lockfile
+# Run tests here
+RUN bun run build
+
+
+# can actually serve as static site
+# but going the app way for expansion
+FROM oven/bun:1.3 AS production
+WORKDIR /apps/client
+COPY --from=builder /apps/client/dist ./dist
+COPY --from=builder /apps/client/package.json ./
+COPY --from=builder /apps/client/serve.ts ./
+# Run tests here
+CMD ["bun", "run", "start"]
 

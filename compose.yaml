@@ -31,7 +31,8 @@ services:
           target: /apps/server/src
         - path: ./apps/server/package.json
           action: rebuild
-    command: bun run start
+    env_file:
+      - ./apps/server/.env
     network_mode: host
 
 
@@ -66,7 +67,6 @@ services:
           target: /apps/client/src
         - path: ./apps/client/package.json
           action: rebuild
-    command: bun run start
     network_mode: host
 
 
@@ -103,7 +103,6 @@ services:
           target: /apps/workers/src
         - path: ./apps/workers/package.json
           action: rebuild
-    command: bun run start
     network_mode: host
 
 
