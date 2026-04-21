@@ -6,6 +6,7 @@ node_modules/
 .direnv
 apps/db/drizzle/
 apps/server/server
+apps/workers/workers
 .tanstack/
 .env
 **/*.pem
