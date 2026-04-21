@@ -5,7 +5,7 @@ node_modules/
 **/*.db
 .direnv
 apps/db/drizzle/
-server
+apps/server/server
 .tanstack/
 .env
 **/*.pem

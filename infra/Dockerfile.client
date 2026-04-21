@@ -22,7 +22,7 @@ RUN bun run build
 
 FROM oven/bun:1.3 AS production
 WORKDIR /apps/client
-COPY --from=builder /apps/client/dist ./
+COPY --from=builder /apps/client/dist ./dist
 COPY --from=builder /apps/client/package.json ./
 COPY --from=builder /apps/client/serve.ts ./
 # Run tests here
