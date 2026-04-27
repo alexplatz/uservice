@@ -1,4 +1,3 @@
-# what is ecr, how to login
 name: CI/CD — Deploy to EC2 via OIDC (Podman)
 on:
   push:
@@ -38,7 +37,7 @@ jobs:
         run: |
           . /etc/os-release || true
           sudo apt-get update
-          sudo apt-get -y install podman podman-compose buildah
+          sudo apt-get -y install buildah
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v3
@@ -59,49 +58,49 @@ jobs:
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build client
-          podman tag localhost/client:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
-          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
+          docker compose -f compose.yaml -f compose.prod.yaml build client
+          docker tag localhost/client:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
+          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
 
       - name: Build & push api
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build api
-          podman tag localhost/api:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA
-          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA
+          docker compose -f compose.yaml -f compose.prod.yaml build api
+          docker tag localhost/api:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA
+          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA
 
       - name: Build & push workers
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build workers
-          podman tag localhost/workers:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
-          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
+          docker compose -f compose.yaml -f compose.prod.yaml build workers
+          docker tag localhost/workers:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
+          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
 
       - name: Build & push client reverse proxy
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build client-revese-proxy
-          podman tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
-          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
+          docker compose -f compose.yaml -f compose.prod.yaml build client-revese-proxy
+          docker tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
+          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
 
       - name: Build & push api reverse proxy
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build api-revese-proxy
-          podman tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
-          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
+          docker compose -f compose.yaml -f compose.prod.yaml build api-revese-proxy
+          docker tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
+          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
 
       - name: Build & push workers reverse proxy
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build workers-revese-proxy
-          podman tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
-          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
+          docker compose -f compose.yaml -f compose.prod.yaml build workers-revese-proxy
+          docker tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
+          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
 
       ### end builds ###
 
