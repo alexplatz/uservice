@@ -115,6 +115,10 @@ jobs:
             aws ecr get-login-password --region $AWS_REGION | podman login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com &&
             podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${IMAGE_TAG} &&
             podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${IMAGE_TAG} &&
             # start/update compose (podman-compose or docker-compose compatible)
             podman-compose pull &&
             podman-compose up -d
