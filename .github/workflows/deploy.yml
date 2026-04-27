@@ -38,7 +38,7 @@ jobs:
         run: |
           . /etc/os-release || true
           sudo apt-get update
-          sudo apt-get -y install podman buildah
+          sudo apt-get -y install podman podman-compose buildah
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v3
