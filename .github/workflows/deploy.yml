@@ -59,42 +59,48 @@ jobs:
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA client
+          podman compose -f compose.yaml -f compose.prod.yaml build client
+          podman tag localhost/client:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
           podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
 
       - name: Build & push api
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA api
+          podman compose -f compose.yaml -f compose.prod.yaml build api
+          podman tag localhost/api:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA
           podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA
 
       - name: Build & push workers
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA api
+          podman compose -f compose.yaml -f compose.prod.yaml build workers
+          podman tag localhost/workers:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
           podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
 
       - name: Build & push client reverse proxy
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA client-revese-proxy
+          podman compose -f compose.yaml -f compose.prod.yaml build client-revese-proxy
+          podman tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
           podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
 
       - name: Build & push api reverse proxy
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA api-revese-proxy
+          podman compose -f compose.yaml -f compose.prod.yaml build api-revese-proxy
+          podman tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
           podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
 
       - name: Build & push workers reverse proxy
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA workers-revese-proxy
+          podman compose -f compose.yaml -f compose.prod.yaml build workers-revese-proxy
+          podman tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
           podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
 
       ### end builds ###
