@@ -11,7 +11,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      AWS_REGION: us-east-1
+      AWS_REGION: us-east-2
       ECR_ACCOUNT: 605262305778
       ECR_REPO_1: uservice-client
       ECR_REPO_2: uservice-api
@@ -32,12 +32,6 @@ jobs:
           echo "${{ secrets.CLIENT_ENV }}" > apps/client/.env
           echo "${{ secrets.API_ENV }}" > apps/server/.env
           echo "${{ secrets.WORKER_ENV }}" > apps/workers/.env
-
-      - name: Install Podman
-        run: |
-          . /etc/os-release || true
-          sudo apt-get update
-          sudo apt-get -y install buildah
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v3
