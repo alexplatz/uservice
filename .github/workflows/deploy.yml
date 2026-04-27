@@ -13,11 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
-      ECR_ACCOUNT: 123456789012   # replace
-      ECR_REPO_1: service-a
+      ECR_ACCOUNT: 605262305778
+      ECR_REPO_1: uservice-client
+      ECR_REPO_2: uservice-api
+      ECR_REPO_3: uservice-workers
+      ECR_REPO_4: uservice-client-reverse-proxy
+      ECR_REPO_5: uservice-api-reverse-proxy
+      ECR_REPO_6: uservice-workers-reverse-proxy
       EC2_SSH_USER: ubuntu
       EC2_HOST: ec2-1-2-3-4.compute-1.amazonaws.com
-      EC2_SSH_KEY: ec2-deploy-key   # secret name
+      EC2_SSH_KEY: EC2-DEPLOY-KEY
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,49 +30,97 @@ jobs:
       # fill this in
       - name: Setup Repo .envs
         run: |
-          ls
+          echo "${{ secrets.CLIENT_ENV }}" > apps/client/.env
+          echo "${{ secrets.API_ENV }}" > apps/server/.env
+          echo "${{ secrets.WORKER_ENV }}" > apps/workers/.env
 
-      # - name: Install Podman
-      #   run: |
-      #     . /etc/os-release || true
-      #     sudo apt-get update
-      #     sudo apt-get -y install podman buildah
+      - name: Install Podman
+        run: |
+          . /etc/os-release || true
+          sudo apt-get update
+          sudo apt-get -y install podman buildah
 
-      # - name: Configure AWS credentials using OIDC
-      #   uses: aws-actions/configure-aws-credentials@v3
-      #   with:
-      #     role-to-assume: arn:aws:iam::605262305778:role/github-deploy
-      #     aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::605262305778:role/github-deploy
+          aws-region: ${{ env.AWS_REGION }}
 
-      # - name: Login to ECR (Podman)
-      #   run: |
-      #     TOKEN=$(aws ecr get-login-password --region $AWS_REGION)
-      #     echo $TOKEN | podman login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+      - name: Login to ECR
+        run: |
+          TOKEN=$(aws ecr get-login-password --region $AWS_REGION)
+          echo $TOKEN | podman login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+          
 
-      # - name: Build & push monorepo (Podman)
-      #   env:
-      #     GITHUB_SHA: ${{ github.sha }}
-      #   run: |
-      #     # podman compose build each
-      #     podman build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA ./service-a
-      #     podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
 
-      # - name: Copy SSH key
-      #   run: |
-      #     echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key
-      #     chmod 600 deploy_key
+      ### image builds ###
+      
+      - name: Build & push client
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA client
+          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:$GITHUB_SHA
 
-      # - name: Update remote podman-compose
-      #   run: |
-      #     ssh -o StrictHostKeyChecking=no -i deploy_key ${EC2_SSH_USER}@${EC2_HOST} '
-      #       cd /home/ubuntu/app &&
-      #       export ECR_ACCOUNT=${ECR_ACCOUNT} AWS_REGION=${AWS_REGION} IMAGE_TAG=${GITHUB_SHA} &&
-      #       # ensure podman can auth to ECR on the remote (use instance role or local login)
-      #       aws ecr get-login-password --region $AWS_REGION | podman login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com &&
-      #       podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${IMAGE_TAG} &&
-      #       podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${IMAGE_TAG} &&
-      #       # start/update compose (podman-compose or docker-compose compatible)
-      #       podman-compose pull &&
-      #       podman-compose up -d
-      #     '
+      - name: Build & push api
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA api
+          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:$GITHUB_SHA
+
+      - name: Build & push workers
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA api
+          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
+
+      - name: Build & push client reverse proxy
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA client-revese-proxy
+          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
+
+      - name: Build & push api reverse proxy
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA api-revese-proxy
+          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
+
+      - name: Build & push workers reverse proxy
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          podman compose -f compose.yaml -f compose.prod.yaml build -t ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA workers-revese-proxy
+          podman push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
+
+      ### end builds ###
+
+
+
+      - name: Copy SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key
+          chmod 600 deploy_key
+
+      - name: Update remote podman-compose
+        run: |
+          ssh -o StrictHostKeyChecking=no -i deploy_key ${EC2_SSH_USER}@${EC2_HOST} '
+            cd /home/ubuntu/app &&
+            export ECR_ACCOUNT=${ECR_ACCOUNT} AWS_REGION=${AWS_REGION} IMAGE_TAG=${GITHUB_SHA} &&
+            # ensure podman can auth to ECR on the remote (use instance role or local login)
+            aws ecr get-login-password --region $AWS_REGION | podman login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:${IMAGE_TAG} &&
+            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${IMAGE_TAG} &&
+            # start/update compose (podman-compose or docker-compose compatible)
+            podman-compose pull &&
+            podman-compose up -d
+          '
 
