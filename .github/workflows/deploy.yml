@@ -110,9 +110,11 @@ jobs:
       - name: Update remote docker-compose
         run: |
           ssh -o StrictHostKeyChecking=no -i deploy_key ${EC2_SSH_USER}@${EC2_HOST} '
-            cd /home/ubuntu/app &&
+            cd /home/ec2-user &&
+            mkdir app &&
+            cd app &&
             export ECR_ACCOUNT=${ECR_ACCOUNT} AWS_REGION=${AWS_REGION} IMAGE_TAG=${GITHUB_SHA} &&
-            # ensure podman can auth to ECR on the remote (use instance role or local login)
+            # ensure docker can auth to ECR on the remote (use instance role or local login)
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com &&
             docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${IMAGE_TAG} &&
             docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${IMAGE_TAG} &&
