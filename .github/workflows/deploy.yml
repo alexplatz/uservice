@@ -104,7 +104,7 @@ jobs:
 
       - name: Copy SSH key
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > deploy_key
+          echo "${{ secrets.EC2_DEPLOY_KEY }}" > deploy_key
           chmod 600 deploy_key
 
       - name: Update remote podman-compose
