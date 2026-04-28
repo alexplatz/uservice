@@ -72,14 +72,14 @@ jobs:
           docker tag localhost/workers:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
           docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
 
-      ### no such service: client-revese-proxy ###
+      ### Error response from daemon: No such image: caddy:2.11.1 ###
       
       - name: Build & push client reverse proxy
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           docker compose -f compose.yaml -f compose.prod.yaml build client-reverse-proxy
-          docker tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
+          docker tag localhost/client-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
           docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
 
       - name: Build & push api reverse proxy
@@ -87,7 +87,7 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           docker compose -f compose.yaml -f compose.prod.yaml build api-reverse-proxy
-          docker tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
+          docker tag localhost/api-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
           docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
 
       - name: Build & push workers reverse proxy
@@ -95,7 +95,7 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           docker compose -f compose.yaml -f compose.prod.yaml build workers-reverse-proxy
-          docker tag caddy:2.11.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
+          docker tag localhost/workers-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
           docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
 
       ### end builds ###

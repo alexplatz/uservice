@@ -2,5 +2,6 @@
 	reverse_proxy localhost:{$WORKERS_PORT}
 
 	### for local dev ###
+	# tls internal
 	# tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
 }

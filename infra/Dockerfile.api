@@ -9,6 +9,8 @@ WORKDIR /apps/server
 COPY apps/server/package*.json ./
 
 
+### TODO: move to mounted volume db
+
 FROM base AS development
 ##### DB, since sqlite is embedded
 COPY apps/db /apps/db
