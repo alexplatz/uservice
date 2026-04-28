@@ -19,7 +19,7 @@ jobs:
       ECR_REPO_4: uservice-client-reverse-proxy
       ECR_REPO_5: uservice-api-reverse-proxy
       ECR_REPO_6: uservice-workers-reverse-proxy
-      EC2_SSH_USER: ubuntu
+      EC2_SSH_USER: ec2-user
       EC2_HOST: ec2-3-140-210-11.us-east-2.compute.amazonaws.com
       EC2_SSH_KEY: EC2-DEPLOY-KEY
     steps:
