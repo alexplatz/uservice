@@ -20,7 +20,7 @@ jobs:
       ECR_REPO_5: uservice-api-reverse-proxy
       ECR_REPO_6: uservice-workers-reverse-proxy
       EC2_SSH_USER: ubuntu
-      EC2_HOST: ec2-1-2-3-4.compute-1.amazonaws.com
+      EC2_HOST: ec2-3-140-210-11.us-east-2.compute.amazonaws.com
       EC2_SSH_KEY: EC2-DEPLOY-KEY
     steps:
       - name: Checkout
@@ -107,21 +107,21 @@ jobs:
           echo "${{ secrets.EC2_DEPLOY_KEY }}" > deploy_key
           chmod 600 deploy_key
 
-      - name: Update remote podman-compose
+      - name: Update remote docker-compose
         run: |
           ssh -o StrictHostKeyChecking=no -i deploy_key ${EC2_SSH_USER}@${EC2_HOST} '
             cd /home/ubuntu/app &&
             export ECR_ACCOUNT=${ECR_ACCOUNT} AWS_REGION=${AWS_REGION} IMAGE_TAG=${GITHUB_SHA} &&
             # ensure podman can auth to ECR on the remote (use instance role or local login)
-            aws ecr get-login-password --region $AWS_REGION | podman login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com &&
-            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${IMAGE_TAG} &&
-            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${IMAGE_TAG} &&
-            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:${IMAGE_TAG} &&
-            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:${IMAGE_TAG} &&
-            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:${IMAGE_TAG} &&
-            podman pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${IMAGE_TAG} &&
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com &&
+            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${IMAGE_TAG} &&
+            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${IMAGE_TAG} &&
+            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:${IMAGE_TAG} &&
+            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:${IMAGE_TAG} &&
+            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:${IMAGE_TAG} &&
+            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${IMAGE_TAG} &&
             # start/update compose (podman-compose or docker-compose compatible)
-            podman-compose pull &&
-            podman-compose up -d
+            docker-compose pull &&
+            docker-compose up -d
           '
 
