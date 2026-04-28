@@ -42,7 +42,7 @@ jobs:
       - name: Login to ECR
         run: |
           TOKEN=$(aws ecr get-login-password --region $AWS_REGION)
-          echo $TOKEN | podman login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+          echo $TOKEN | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
           
 
 
