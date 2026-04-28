@@ -1,16 +1,13 @@
 services:
   api-reverse-proxy:
-    image: caddy:2.11.1
+    build:
+      dockerfile: ./infra/api-reverse-proxy/Dockerfile
+    image: localhost/api-reverse-proxy:0.0.1
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
-      - "8001:8001"
-    volumes:
-      - ./infra/api-reverse-proxy/conf:/etc/caddy
-      - caddy_data:/data
-      - caddy_config:/config
     env_file:
       - ./apps/server/.env
     network_mode: host
@@ -38,17 +35,14 @@ services:
 
 
   client-reverse-proxy:
-    image: caddy:2.11.1
+    build:
+      dockerfile: ./infra/client-reverse-proxy/Dockerfile
+    image: localhost/client-reverse-proxy:0.0.1
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
-      - "3001:3001"
-    volumes:
-      - ./infra/client-reverse-proxy/conf:/etc/caddy
-      - caddy_data:/data
-      - caddy_config:/config
     env_file:
       - ./apps/client/.env
     network_mode: host
@@ -72,17 +66,14 @@ services:
 
   
   workers-reverse-proxy:
-    image: caddy:2.11.1
+    build:
+      dockerfile: ./infra/workers-reverse-proxy/Dockerfile
+    image: localhost/workers-reverse-proxy:0.0.1
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
-      - "8002:8002"
-    volumes:
-      - ./infra/workers-reverse-proxy/conf:/etc/caddy
-      - caddy_data:/data
-      - caddy_config:/config
     env_file:
       - ./apps/workers/.env
     network_mode: host
