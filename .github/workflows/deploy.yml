@@ -125,7 +125,7 @@ jobs:
             docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${GITHUB_SHA} &&
 
             # start/update compose (podman-compose or docker-compose compatible)
-            docker-compose pull &&
-            docker-compose up -d
+            docker compose pull &&
+            docker compose up -d
           "
 
