@@ -116,13 +116,13 @@ jobs:
             export IMAGE_TAG='${GITHUB_SHA}' &&
 
             # ensure docker can auth to ECR on the remote (use instance role or local login)
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${IMAGE_TAG} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${IMAGE_TAG} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:${IMAGE_TAG} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:${IMAGE_TAG} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:${IMAGE_TAG} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${IMAGE_TAG} &&
+            aws ecr get-login-password --region \$AWS_REGION | docker login --username AWS --password-stdin \$ECR_ACCOUNT.dkr.ecr.\$AWS_REGION.amazonaws.com &&
+            docker pull \$ECR_ACCOUNT.dkr.ecr.\$AWS_REGION.amazonaws.com/\$ECR_REPO_1:\$IMAGE_TAG &&
+            docker pull \$ECR_ACCOUNT.dkr.ecr.\$AWS_REGION.amazonaws.com/\$ECR_REPO_2:\$IMAGE_TAG &&
+            docker pull \$ECR_ACCOUNT.dkr.ecr.\$AWS_REGION.amazonaws.com/\$ECR_REPO_3:\$IMAGE_TAG &&
+            docker pull \$ECR_ACCOUNT.dkr.ecr.\$AWS_REGION.amazonaws.com/\$ECR_REPO_4:\$IMAGE_TAG &&
+            docker pull \$ECR_ACCOUNT.dkr.ecr.\$AWS_REGION.amazonaws.com/\$ECR_REPO_5:\$IMAGE_TAG &&
+            docker pull \$ECR_ACCOUNT.dkr.ecr.\$AWS_REGION.amazonaws.com/\$ECR_REPO_6:\$IMAGE_TAG &&
             # start/update compose (podman-compose or docker-compose compatible)
             docker-compose pull &&
             docker-compose up -d
