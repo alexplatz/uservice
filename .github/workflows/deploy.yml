@@ -16,9 +16,9 @@ jobs:
       ECR_REPO_1: uservice-client
       ECR_REPO_2: uservice-api
       ECR_REPO_3: uservice-workers
-      ECR_REPO_4: uservice-client-reverse-proxy
-      ECR_REPO_5: uservice-api-reverse-proxy
-      ECR_REPO_6: uservice-workers-reverse-proxy
+      # ECR_REPO_4: uservice-client-reverse-proxy
+      # ECR_REPO_5: uservice-api-reverse-proxy
+      # ECR_REPO_6: uservice-workers-reverse-proxy
       ECR_REPO_7: uservice-meta-reverse-proxy
       EC2_SSH_USER: ec2-user
       EC2_HOST: ec2-3-140-210-11.us-east-2.compute.amazonaws.com
@@ -72,31 +72,30 @@ jobs:
           docker tag localhost/workers:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
           docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:$GITHUB_SHA
 
-      ### Error response from daemon: No such image: caddy:2.11.1 ###
-      
-      - name: Build & push client reverse proxy
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        run: |
-          docker compose -f compose.yaml -f compose.prod.yaml build client-reverse-proxy
-          docker tag localhost/client-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
-          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
 
-      - name: Build & push api reverse proxy
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        run: |
-          docker compose -f compose.yaml -f compose.prod.yaml build api-reverse-proxy
-          docker tag localhost/api-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
-          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
+      # - name: Build & push client reverse proxy
+      #   env:
+      #     GITHUB_SHA: ${{ github.sha }}
+      #   run: |
+      #     docker compose -f compose.yaml -f compose.prod.yaml build client-reverse-proxy
+      #     docker tag localhost/client-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
+      #     docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:$GITHUB_SHA
 
-      - name: Build & push workers reverse proxy
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-        run: |
-          docker compose -f compose.yaml -f compose.prod.yaml build workers-reverse-proxy
-          docker tag localhost/workers-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
-          docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
+      # - name: Build & push api reverse proxy
+      #   env:
+      #     GITHUB_SHA: ${{ github.sha }}
+      #   run: |
+      #     docker compose -f compose.yaml -f compose.prod.yaml build api-reverse-proxy
+      #     docker tag localhost/api-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
+      #     docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:$GITHUB_SHA
+
+      # - name: Build & push workers reverse proxy
+      #   env:
+      #     GITHUB_SHA: ${{ github.sha }}
+      #   run: |
+      #     docker compose -f compose.yaml -f compose.prod.yaml build workers-reverse-proxy
+      #     docker tag localhost/workers-reverse-proxy:0.0.1 ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
+      #     docker push ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:$GITHUB_SHA
 
       - name: Build & push workers meta proxy
         env:
@@ -129,9 +128,9 @@ jobs:
             docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_1}:${GITHUB_SHA} &&
             docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_2}:${GITHUB_SHA} &&
             docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_3}:${GITHUB_SHA} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:${GITHUB_SHA} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:${GITHUB_SHA} &&
-            docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${GITHUB_SHA} &&
+            # docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_4}:${GITHUB_SHA} &&
+            # docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_5}:${GITHUB_SHA} &&
+            # docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_6}:${GITHUB_SHA} &&
             docker pull ${ECR_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_7}:${GITHUB_SHA} &&
 
             # start/update compose (podman-compose or docker-compose compatible)

@@ -15,6 +15,8 @@ services:
       context: .
       dockerfile: ./infra/Dockerfile.client
     image: localhost/client:0.0.1
+    env_file:
+      - ./apps/client/.env
     network_mode: host
   
   workers:
