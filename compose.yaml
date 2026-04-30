@@ -5,9 +5,10 @@ services:
     image: localhost/api-reverse-proxy:0.0.1
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "7002:443"
+      # - "80:80"
+      # - "443:443"
+      # - "443:443/udp"
     env_file:
       - ./apps/server/.env
     network_mode: host
@@ -40,9 +41,10 @@ services:
     image: localhost/client-reverse-proxy:0.0.1
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "7001:443"
+      # - "80:80"
+      # - "443:443"
+      # - "443:443/udp"
     env_file:
       - ./apps/client/.env
     network_mode: host
@@ -71,9 +73,10 @@ services:
     image: localhost/workers-reverse-proxy:0.0.1
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "7003:443"
+      # - "80:80"
+      # - "443:443"
+      # - "443:443/udp"
     env_file:
       - ./apps/workers/.env
     network_mode: host
@@ -98,6 +101,20 @@ services:
           action: rebuild
     network_mode: host
 
+  meta-reverse-proxy:
+    build:
+      dockerfile: ./infra/meta-reverse-proxy/Dockerfile
+    image: localhost/meta-reverse-proxy:0.0.1
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    env_file:
+      - ./apps/client/.env
+      - ./apps/server/.env
+      - ./apps/workers/.env
+    network_mode: host
 
 
 volumes:
