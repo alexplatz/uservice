@@ -1,0 +1,23 @@
+{$VITE_CLIENT_PROXY} {
+	reverse_proxy localhost:7001
+
+	### for local dev ###
+	# tls internal
+	# tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
+}
+
+{$SERVER_PROXY} {
+	reverse_proxy localhost:7002
+
+	### for local dev ###
+	# tls internal
+	# tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
+}
+
+{$WORKERS_PROXY} {
+	reverse_proxy localhost:7003
+
+	### for local dev ###
+	# tls internal
+	# tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
+}
