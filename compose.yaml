@@ -1,52 +1,13 @@
 services:
-  api-reverse-proxy:
-    build:
-      dockerfile: ./infra/api-reverse-proxy/Dockerfile
-    image: localhost/api-reverse-proxy:0.0.1
-    restart: unless-stopped
-    ports:
-      - "7002:443"
-      # - "80:80"
-      # - "443:443"
-      # - "443:443/udp"
-    env_file:
-      - ./apps/server/.env
-    network_mode: host
-
   api:
     build:
       context: .
       dockerfile: ./infra/Dockerfile.api
     image: localhost/api:0.0.1
-    ports:
-    - "8001:8001"
     volumes: 
       - ./apps/db/data:/apps/db/data
-    develop:
-      watch:
-        - path: ./apps/server/src
-          action: sync
-          target: /apps/server/src
-        - path: ./apps/server/package.json
-          action: rebuild
     env_file:
       - ./apps/server/.env
-    network_mode: host
-
-
-
-  client-reverse-proxy:
-    build:
-      dockerfile: ./infra/client-reverse-proxy/Dockerfile
-    image: localhost/client-reverse-proxy:0.0.1
-    restart: unless-stopped
-    ports:
-      - "7001:443"
-      # - "80:80"
-      # - "443:443"
-      # - "443:443/udp"
-    env_file:
-      - ./apps/client/.env
     network_mode: host
 
   client:
@@ -54,67 +15,57 @@ services:
       context: .
       dockerfile: ./infra/Dockerfile.client
     image: localhost/client:0.0.1
-    ports:
-    - "3001:3001"
-    develop:
-      watch:
-        - path: ./apps/client/src
-          action: sync
-          target: /apps/client/src
-        - path: ./apps/client/package.json
-          action: rebuild
     network_mode: host
-
-
   
-  workers-reverse-proxy:
-    build:
-      dockerfile: ./infra/workers-reverse-proxy/Dockerfile
-    image: localhost/workers-reverse-proxy:0.0.1
-    restart: unless-stopped
-    ports:
-      - "7003:443"
-      # - "80:80"
-      # - "443:443"
-      # - "443:443/udp"
-    env_file:
-      - ./apps/workers/.env
-    network_mode: host
-
   workers:
     build:
       context: .
       dockerfile: ./infra/Dockerfile.workers
     image: localhost/workers:0.0.1
-    ports:
-    - "8002:8002"
     volumes: 
       - ./apps/db/data:/apps/db/data
     env_file:
       - ./apps/workers/.env
-    develop:
-      watch:
-        - path: ./apps/workers/src
-          action: sync
-          target: /apps/workers/src
-        - path: ./apps/workers/package.json
-          action: rebuild
     network_mode: host
+
 
   meta-reverse-proxy:
     build:
       dockerfile: ./infra/meta-reverse-proxy/Dockerfile
     image: localhost/meta-reverse-proxy:0.0.1
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
     env_file:
       - ./apps/client/.env
       - ./apps/server/.env
       - ./apps/workers/.env
     network_mode: host
+
+  # client-reverse-proxy:
+  #   build:
+  #     dockerfile: ./infra/client-reverse-proxy/Dockerfile
+  #   image: localhost/client-reverse-proxy:0.0.1
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./apps/client/.env
+  #   network_mode: host
+
+  # api-reverse-proxy:
+  #   build:
+  #     dockerfile: ./infra/api-reverse-proxy/Dockerfile
+  #   image: localhost/api-reverse-proxy:0.0.1
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./apps/server/.env
+  #   network_mode: host
+
+  # workers-reverse-proxy:
+  #   build:
+  #     dockerfile: ./infra/workers-reverse-proxy/Dockerfile
+  #   image: localhost/workers-reverse-proxy:0.0.1
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./apps/workers/.env
+  #   network_mode: host
 
 
 volumes:
