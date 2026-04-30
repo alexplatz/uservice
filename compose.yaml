@@ -85,6 +85,8 @@ services:
     image: localhost/workers:0.0.1
     ports:
     - "8002:8002"
+    volumes: 
+      - ./apps/db/data:/apps/db/data
     env_file:
       - ./apps/workers/.env
     develop:
