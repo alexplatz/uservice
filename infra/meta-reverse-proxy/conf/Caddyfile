@@ -2,7 +2,7 @@
 	reverse_proxy localhost:{$VITE_CLIENT_PORT}
 
 	### for local dev ###
-	tls internal
+	# tls internal
 	# tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
 }
 
@@ -10,7 +10,7 @@
 	reverse_proxy localhost:{$SERVER_PORT}
 
 	### for local dev ###
-	tls internal
+	# tls internal
 	# tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
 }
 
@@ -18,6 +18,6 @@
 	reverse_proxy localhost:{$WORKERS_PORT}
 
 	### for local dev ###
-	tls internal
+	# tls internal
 	# tls /etc/caddy/365-cert.pem /etc/caddy/365-key.pem
 }
