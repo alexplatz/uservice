@@ -5,6 +5,8 @@ a minimal user service example, composed of microservices
   <video src="https://github.com/user-attachments/assets/8b9e4698-37b3-4b41-bf0e-9e4f29601762" width="80%" controls></video>
 </p>
 
+live demo: [https://demo1.triplehelix.lol](https://demo1.triplehelix.lol)
+
 # installation
 clone in the repo and run nix:
 ```
