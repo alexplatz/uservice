@@ -2,7 +2,7 @@
 a minimal user service example, composed of microservices
 
 <p align="center" width="100%">
-  <video src="https://github.com/user-attachments/assets/06c8bd8c-14c5-480e-8ff7-55efec8ada53" width="80%" controls></video>
+  <video src="https://github.com/user-attachments/assets/8b9e4698-37b3-4b41-bf0e-9e4f29601762" width="80%" controls></video>
 </p>
 
 # installation
